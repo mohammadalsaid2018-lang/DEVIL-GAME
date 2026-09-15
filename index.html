@@ -1,1874 +1,464 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>كِشك - لعبة إدارة الكشك المصري</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>الصندوق ١٧ — تحقيق تفاعلي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-  * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-  .font-brand { font-family: 'Changa', 'Cairo', sans-serif; }
-  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #1a1512; color: #fff; }
-  #game-app { position: relative; width: 100%; max-width: 480px; height: 100%; margin: 0 auto; background: linear-gradient(180deg, #2b1f1d 0%, #15100e 100%); display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow: hidden; }
-  .awning { background: repeating-linear-gradient(90deg, #d32f2f, #d32f2f 20px, #ffffff 20px, #ffffff 40px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 4px; }
-  @keyframes floatPulse { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-4px) scale(1.02); } }
-  .animate-float { animation: floatPulse 2.5s infinite ease-in-out; }
-  @keyframes popIn { 0% { transform: scale(0.7); opacity: 0; } 80% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
-  .pop-in { animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
-  .coin-effect { position: absolute; font-weight: 900; color: #facc15; text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 12px rgba(250,204,21,0.6); animation: coinFly 1.25s ease-out forwards; pointer-events: none; z-index: 100; font-size: 1.15rem; white-space: nowrap; }
-  @keyframes coinFly { 0% { transform: translate(-50%,0) scale(0.7); opacity: 0; } 20% { transform: translate(-50%,-16px) scale(1.25); opacity: 1; } 100% { transform: translate(-50%,-72px) scale(1); opacity: 0; } }
-  .btn-3d { transition: all 0.1s ease; box-shadow: 0 5px 0 rgba(0,0,0,0.35); }
-  .btn-3d:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
-  /* ---------- JOYSTICK ---------- */
-  #joystick-base { position: absolute; bottom: 12px; left: 12px; width: 118px; height: 118px; border-radius: 50%;
-    background: radial-gradient(circle at 50% 45%, rgba(251,191,36,0.16) 0%, rgba(20,14,10,0.55) 72%);
-    border: 2px solid rgba(251,191,36,0.5); touch-action: none; z-index: 26;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.55), inset 0 0 22px rgba(251,191,36,0.10); }
-  #joystick-base::after { content: ''; position: absolute; inset: 14px; border-radius: 50%; border: 1px dashed rgba(251,191,36,0.18); }
-  #joystick-knob { width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #fef9c3, #f59e0b 55%, #b45309 100%);
-    border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 5px 12px rgba(0,0,0,0.6), inset 0 -3px 6px rgba(0,0,0,0.25);
-    position: relative; z-index: 2; pointer-events: none; will-change: transform; }
-  /* ---------- INTERACTION PANEL ---------- */
-  #interact-panel { position: absolute; bottom: 14px; right: 12px; z-index: 26; display: flex; flex-direction: column-reverse; gap: 8px; align-items: stretch; max-width: 42%; }
-  .interact-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 14px;
-    font-weight: 800; font-size: 12.5px; border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 5px 0 rgba(0,0,0,0.4);
-    transition: transform 0.08s ease, box-shadow 0.08s ease; line-height: 1.15; }
-  .interact-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
-  .interact-btn .cnt { background: rgba(0,0,0,0.35); border-radius: 8px; padding: 1px 6px; font-size: 11px; }
-  /* ---------- CARRY TRAY ---------- */
-  #carry-tray { position: absolute; top: 10px; left: 10px; z-index: 24; display: flex; gap: 6px; align-items: center;
-    background: rgba(12,9,7,0.72); border: 1.5px solid rgba(251,191,36,0.45); border-radius: 14px; padding: 5px 8px; backdrop-filter: blur(4px); }
-  .carry-slot { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1.5px dashed rgba(251,191,36,0.35);
-    display: flex; align-items: center; justify-content: center; font-size: 19px; }
-  .carry-slot.filled { border-style: solid; border-color: rgba(251,191,36,0.85); background: rgba(251,191,36,0.14); animation: popIn 0.25s; }
-  /* ---------- MISC ---------- */
-  .toast-float { position: absolute; transform: translate(-50%,-50%); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
-    background: rgba(0,0,0,0.82); border: 1px solid rgba(251,191,36,0.6); white-space: nowrap; z-index: 90; pointer-events: none; }
-  @keyframes popFade { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.7); } 25% { opacity: 1; transform: translate(-50%,-50%) scale(1.06); } 100% { opacity: 0; transform: translate(-50%,-110%) scale(0.95); } }
-  .toast-float { animation: popFade 1.5s ease-out forwards; }
-  @keyframes moneyPop { 0% { transform: scale(1); } 40% { transform: scale(1.28); color: #fde047; } 100% { transform: scale(1); } }
-  .money-pop { animation: moneyPop 0.45s ease; }
-  .event-shake { animation: evShake 0.5s ease; }
-  @keyframes evShake { 0%,100% { transform: translateX(-50%); } 25% { transform: translateX(-50%) rotate(-2deg); } 75% { transform: translateX(-50%) rotate(2deg); } }
-  #game-view { touch-action: none; }
-  canvas { display: block; touch-action: none; }
-  .hidden { display: none !important; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;background:#04050a;color:#e9e4da;font-family:'Cairo',system-ui,sans-serif;overflow:hidden;touch-action:manipulation}
+:root{--bg:#07080c;--panel:#0e1116;--line:#252b37;--gold:#d9a24a;--teal:#5fb0a5;--red:#c4534a;--txt:#e9e4da;--dim:#8a9080}
+#app{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,#12161f,#04050a 70%)}
+.frame{position:relative;width:100%;height:100%;max-width:480px;max-height:960px;background:#080a0f;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 100px #000,0 0 0 1px #1a1e27}
+@media(min-width:540px){.frame{border-radius:26px;border:1px solid #232833}}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;animation:fadeIn .4s}
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{transform:translateY(16px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes up{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+/* HOME */
+#start{justify-content:flex-start;align-items:center;text-align:center;overflow:hidden;overflow-y:auto}
+.homeBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 85%,#3a2a15 0%,transparent 55%),radial-gradient(ellipse at 20% 10%,#1b2738 0%,transparent 60%),linear-gradient(180deg,#0a0d14,#05060b);animation:homePulse 8s ease-in-out infinite alternate}
+@keyframes homePulse{from{filter:brightness(.85)}to{filter:brightness(1.12)}}
+.homeGlow{position:absolute;left:50%;top:22%;width:260px;height:260px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(217,162,74,.18),transparent 70%);animation:glowP 4s ease-in-out infinite alternate}
+@keyframes glowP{from{opacity:.6;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+.dust{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.dust i{position:absolute;width:3px;height:3px;background:#d9a24a;border-radius:50%;opacity:.4;animation:floatD 9s linear infinite}
+@keyframes floatD{from{transform:translateY(110%)}to{transform:translateY(-20%)}}
+.homeBoxArt{position:absolute;top:9%;left:50%;transform:translateX(-50%);font-size:54px;filter:drop-shadow(0 12px 30px rgba(0,0,0,.8));animation:boxF 5s ease-in-out infinite}
+@keyframes boxF{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+.homeBoxArt span{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;color:#ff5a4a;background:#000a;padding:1px 7px;border-radius:6px;border:1px solid #ff5a4a66}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.85) 100%);pointer-events:none;z-index:2}
+.startInner{position:relative;z-index:3;padding:118px 20px 24px;width:100%}
+.playerBadge{background:#0e1116ee;border:1px solid #2a3140;border-radius:14px;padding:8px 12px;display:flex;align-items:center;gap:10px;margin-bottom:12px;text-align:right}
+.pbAv{width:42px;height:42px;border-radius:12px;background:linear-gradient(180deg,#2a2113,#14100a);border:1px solid #4a3c22;display:flex;align-items:center;justify-content:center;font-size:22px}
+.pbInfo{flex:1}
+.pbLvl{font-size:12px;font-weight:800;color:var(--gold)}
+.pbXp{font-size:10px;color:#8a9080}
+.xpbar{height:6px;background:#161b23;border-radius:6px;overflow:hidden;margin-top:4px}
+.xpfill{height:100%;width:0;background:linear-gradient(90deg,#8a6420,#d9a24a,#f0cf8e);transition:width .8s;box-shadow:0 0 10px rgba(217,162,74,.6)}
+.tag{display:inline-block;font-size:11px;letter-spacing:2px;color:var(--gold);border:1px solid #4a3c22;padding:4px 12px;border-radius:20px;background:#15110a;margin-bottom:10px}
+.startInner h1{font-size:44px;font-weight:800;margin:0 0 4px;color:#f2ece0;text-shadow:0 0 40px rgba(217,162,74,.35)}
+.startInner h1 span{color:var(--gold);text-shadow:0 0 30px rgba(217,162,74,.7)}
+.sub{color:#9aa08f;font-size:13px;line-height:1.9;margin:0 8px 14px}
+.homeGrid{display:flex;flex-direction:column;gap:9px}
+.btn{border:none;border-radius:14px;padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;min-height:52px}
+.btn.primary{background:linear-gradient(180deg,#d9a24a,#a9752a);color:#1a1206;box-shadow:0 10px 30px rgba(217,162,74,.25)}
+.btn.primary:active{transform:scale(.97)}
+.btn.ghost{background:#12161e;color:#c9c3b5;border:1px solid #262c38;min-height:52px}
+.btn.ghost:active{background:#1a2029}
+.btn.goldline{background:#1a140a;color:var(--gold);border:1px solid #6b5225}
+.btn.small{padding:11px;font-size:13px;min-height:46px}
+.btn:disabled{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.homeRow2{display:flex;gap:9px}.homeRow2 .btn{flex:1;font-size:13px;padding:12px 6px}
+.hintline{margin-top:14px;font-size:11px;color:#5e6559;letter-spacing:.5px}
+/* GAME TOP */
+#game{background:#07080c}
+#top{position:relative;z-index:20;padding:10px 12px 8px;background:linear-gradient(180deg,#0a0c12,#0a0c12f0);border-bottom:1px solid #14181f}
+.topRow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.stgNum{font-size:10px;color:var(--gold);letter-spacing:2px}
+.stgTitle{font-size:15px;font-weight:800;color:#efe9dd;line-height:1.3}
+.place{font-size:10.5px;color:#787e70;margin-top:2px}
+.lvlLine{font-size:10px;color:var(--gold);margin-top:3px}
+.iconbtn{background:#12161e;border:1px solid #232a35;color:#b6b1a4;width:44px;height:44px;border-radius:12px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.pbar{height:4px;background:#161b23;border-radius:4px;margin-top:8px;overflow:hidden}
+.pfill{height:100%;width:0;background:linear-gradient(90deg,#8a6420,#d9a24a,#f0cf8e);border-radius:4px;transition:width .8s;box-shadow:0 0 12px rgba(217,162,74,.6)}
+.xpbarMini{height:3px;background:#10141b;border-radius:3px;margin-top:5px;overflow:hidden}
+.goal{font-size:11px;color:#9aa08f;margin-top:7px;display:flex;gap:6px;line-height:1.6}
+.goal b{color:var(--gold)}
+.saveDot{font-size:9px;color:#3f6b63}
+/* scene */
+.scene{position:relative;flex:1;overflow:hidden;background:#05060a}
+.art{position:absolute;inset:0;transition:filter .6s,opacity .6s;animation:sceneIn .6s}
+@keyframes sceneIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+.prop{position:absolute;border-radius:4px}
+.prop-shelf{background:repeating-linear-gradient(180deg,#33261700 0 8px,#1a120b 8px 20px),linear-gradient(180deg,#2a2018,#14100b);border:1px solid #0a0705;box-shadow:inset 0 0 40px #000a,0 12px 30px #0008}
+.prop-crate{background:linear-gradient(160deg,#453222,#1d150e);border:1px solid #0d0906;box-shadow:0 14px 34px #000a}
+.prop-box{background:linear-gradient(160deg,#6a4a2c,#2b1c10);border:1px solid #120c07;box-shadow:0 16px 40px #000c,inset 0 0 30px #0008;border-radius:6px}
+.prop-desk{background:linear-gradient(180deg,#4a3623,#170f09);border-radius:6px 6px 3px 3px;box-shadow:0 22px 45px #000c}
+.prop-lamp{background:radial-gradient(circle at 50% 10%,#ffdca0 0%,rgba(255,196,110,.35) 35%,transparent 72%);filter:blur(5px);mix-blend-mode:screen}
+.prop-window{background:linear-gradient(180deg,#33405e,#0d131f);border:2px solid #0b0e15;box-shadow:0 0 70px rgba(90,130,190,.35),inset 0 0 25px #000}
+.prop-door{background:linear-gradient(180deg,#302317,#0e0a06);border:1px solid #050403;box-shadow:inset 0 0 30px #000}
+.prop-board{background:#221d15;border:3px solid #0d0b07;box-shadow:inset 0 0 25px #000,0 10px 25px #000a}
+.prop-machine{background:linear-gradient(180deg,#242b35,#0b0e13);border-radius:9px;border:1px solid #070a0e;box-shadow:0 12px 28px #000a}
+.prop-table{background:linear-gradient(180deg,#3a2d1e,#120c07);border-radius:5px;box-shadow:0 16px 34px #000b}
+.prop-body{background:linear-gradient(180deg,#1b1f27,#080a0e);border-radius:12px}
+.prop-safe{background:linear-gradient(160deg,#2b313b,#101318);border-radius:6px;border:1px solid #05070a;box-shadow:inset 0 0 25px #000,0 10px 22px #000a}
+.prop-pipe{background:linear-gradient(180deg,#2a2620,#12100c);border-radius:20px;box-shadow:inset -6px 0 12px #000a}
+.prop-glow{filter:blur(3px);mix-blend-mode:screen}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 30%,rgba(0,0,0,.75) 100%)}
+.grain{position:absolute;inset:-60%;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");animation:gr 1s steps(4) infinite}
+@keyframes gr{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(3%,3%)}}
+.torch{position:absolute;width:230px;height:230px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:screen;display:none;background:radial-gradient(circle,rgba(255,228,175,.30) 0%,rgba(255,210,140,.10) 42%,transparent 72%)}
+.scene.darkmode .art{filter:brightness(.13) saturate(.35) contrast(1.2)}
+.scene.darkmode .torch{display:block}
+.hotspots{position:absolute;inset:0;z-index:8}
+.hs{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:opacity .5s;animation:hsIn .5s}
+@keyframes hsIn{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.hs-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;background:rgba(14,18,25,.78);border:2px solid rgba(217,162,74,.6);box-shadow:0 0 0 0 rgba(217,162,74,.45);animation:ping 2.6s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(217,162,74,.45)}70%{box-shadow:0 0 0 14px rgba(217,162,74,0)}100%{box-shadow:0 0 0 0 rgba(217,162,74,0)}}
+.hs-lbl{font-size:10px;color:#e6dfd0;background:rgba(8,10,14,.85);padding:3px 8px;border-radius:8px;white-space:nowrap;border:1px solid #2a3140;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.hs.done{opacity:.7}.hs.done .hs-dot{border-color:#3b6b63;background:rgba(12,26,24,.78);animation:none}
+.hs.hiddenone{opacity:.3}.hs.hiddenone.lit{opacity:1}
+.hs.ngplus .hs-dot{border-color:#9a6bff;box-shadow:0 0 14px rgba(154,107,255,.5)}
+/* hud */
+#hud{position:relative;z-index:20;display:flex;gap:6px;padding:9px 10px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#0a0c12,#0a0c12f0);border-top:1px solid #14181f}
+.hbtn{flex:1;background:#10141b;border:1px solid #1e2531;border-radius:12px;color:#a8a294;padding:9px 2px;font-family:inherit;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-height:56px;justify-content:center;position:relative}
+.hbtn:active{background:#1a212c;transform:scale(.96)}
+.hbtn .ic{font-size:17px}
+.badgeCount{position:absolute;top:4px;left:6px;background:var(--gold);color:#000;font-size:9px;font-weight:800;border-radius:10px;padding:0 6px;min-width:18px;text-align:center}
+/* overlays */
+.modal,.sheet{position:absolute;inset:0;z-index:60;display:flex;justify-content:center;background:rgba(3,4,7,.78);backdrop-filter:blur(5px);animation:fadeIn .22s}
+.modal{align-items:center;padding:14px}.sheet{align-items:flex-end}
+.modalBox{width:100%;max-width:430px;background:linear-gradient(180deg,#11151d,#0b0e14);border:1px solid #262d3a;border-radius:20px;padding:18px;max-height:88%;overflow-y:auto;animation:pop .28s;box-shadow:0 30px 70px #000}
+.sheetBox{width:100%;max-width:480px;background:linear-gradient(180deg,#11151d,#0a0d12);border-top:1px solid #2a3140;border-radius:22px 22px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom));max-height:90%;overflow-y:auto;animation:up .3s}
+.mTitle{font-size:17px;font-weight:800;color:#f0eadd;margin:0 0 4px}
+.mType{font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:10px}
+.mText{font-size:13.5px;line-height:2.1;color:#bdb8a9;white-space:pre-line;margin-bottom:14px}
+.closeBtn{width:100%;background:#161b24;border:1px solid #2a3140;color:#c8c2b3;border-radius:13px;padding:14px;font-family:inherit;font-size:14px;cursor:pointer;margin-top:8px;min-height:50px}
+.closeBtn.gold{background:linear-gradient(180deg,#d9a24a,#a9752a);color:#1a1206;border:none;font-weight:700}
+.evGrid{display:flex;flex-direction:column;gap:8px}
+.evCard{display:flex;gap:10px;align-items:center;background:#12161e;border:1px solid #222936;border-radius:13px;padding:12px;cursor:pointer;min-height:56px}
+.evCard.sel{border-color:var(--gold);background:#1c1610}
+.evIc{font-size:19px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#0a0d12;border-radius:10px;flex-shrink:0}
+.evNm{font-size:12.5px;color:#ddd7c8;font-weight:600;line-height:1.5}
+.evTp{font-size:10px;color:#767c6e;margin-top:2px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:8px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;background:#12161e;border:1px solid #222936;color:#8d9384;border-radius:20px;padding:8px 14px;font-size:11px;font-family:inherit;cursor:pointer;min-height:38px}
+.tab.on{background:#1e1810;border-color:#6b5225;color:var(--gold)}
+.empty{text-align:center;color:#565c50;font-size:12px;padding:26px 0}
+.searchBox{width:100%;background:#0b0e13;border:1px solid #2a3140;border-radius:12px;padding:12px;font-family:inherit;font-size:13px;color:#ddd;margin-bottom:10px;min-height:48px}
+/* puzzle */
+.padTitle{font-size:15px;font-weight:800;color:#f0eadd;margin-bottom:6px;text-align:center}
+.padQ{font-size:12px;color:#93998a;line-height:1.9;text-align:center;margin-bottom:14px;white-space:pre-line}
+.slots{display:flex;justify-content:center;gap:10px;margin-bottom:16px;direction:ltr}
+.slot{width:48px;height:58px;border-radius:12px;background:#0b0e13;border:1px solid #2a3140;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--gold)}
+.slot.on{border-color:var(--gold);box-shadow:0 0 18px rgba(217,162,74,.3)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto}
+.key{background:#151a23;border:1px solid #262d3a;border-radius:13px;color:#ddd7c8;font-size:19px;font-family:inherit;padding:14px 0;cursor:pointer;min-height:52px}
+.key:active{background:#222b38;transform:scale(.95)}
+.key.wide{grid-column:span 3;font-size:13px}
+.orderList{display:flex;flex-direction:column;gap:8px}
+.oItem{background:#12161e;border:1px solid #222936;border-radius:12px;padding:13px;font-size:12.5px;color:#c4bfb1;cursor:pointer;display:flex;gap:9px;align-items:center;line-height:1.6;min-height:52px}
+.oItem.picked{opacity:.4;border-color:#3b6b63}
+.oNum{width:24px;height:24px;border-radius:50%;background:#0a0d12;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold);flex-shrink:0}
+.matchWrap{display:flex;gap:8px}.matchCol{flex:1;display:flex;flex-direction:column;gap:7px}
+.mItem{background:#12161e;border:1px solid #222936;border-radius:11px;padding:11px;font-size:11.5px;color:#c4bfb1;text-align:center;cursor:pointer;line-height:1.5;min-height:48px}
+.mItem.sel{border-color:var(--gold);background:#1c1610}
+.mItem.done{opacity:.4;border-color:#3b6b63;pointer-events:none}
+.mMulti{background:#12161e;border:1px solid #222936;border-radius:12px;padding:13px;font-size:12.5px;color:#c4bfb1;cursor:pointer;margin-bottom:7px;display:flex;gap:9px;line-height:1.6;min-height:52px}
+.mMulti.sel{border-color:var(--gold);background:#1c1610}
+.chk{width:18px;height:18px;border-radius:5px;border:1px solid #39414f;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.mMulti.sel .chk{background:var(--gold);border-color:var(--gold);color:#1a1206}
+/* cine */
+.cine{position:absolute;inset:0;z-index:90;background:#04050a;display:flex;align-items:center;justify-content:center;padding:32px;text-align:center;animation:fadeIn .5s}
+.cineText{font-size:16px;line-height:2.3;color:#cfc9ba;max-width:340px;font-weight:300}
+.cineText p{margin:0 0 16px;opacity:0;animation:cin .9s forwards}
+@keyframes cin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.cineBars{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#000 0 12%,transparent 12% 88%,#000 88% 100%);opacity:.85}
+.cineSkip{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);background:#12161e;border:1px solid #262d3a;color:#9aa08f;border-radius:20px;padding:11px 24px;font-family:inherit;font-size:12px;cursor:pointer;min-height:46px}
+/* toast + notify */
+.toast{position:absolute;left:50%;bottom:100px;transform:translate(-50%,20px);z-index:95;background:rgba(16,20,27,.96);border:1px solid #3a3220;color:#e2dccd;padding:10px 18px;border-radius:13px;font-size:12px;opacity:0;pointer-events:none;transition:.32s;max-width:88%;text-align:center;line-height:1.7}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.bad{border-color:#5a2b28;color:#e8b3ad}.toast.good{border-color:#2c5a52;color:#a8ddd3}
+#notifyWrap{position:absolute;top:8px;left:10px;right:10px;z-index:96;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.notify{background:linear-gradient(180deg,#141a24,#0e1218);border:1px solid #3a3220;border-radius:12px;padding:9px 12px;display:flex;gap:9px;align-items:center;animation:up .3s;box-shadow:0 10px 30px #000a}
+.notify .nic{font-size:20px}.notify .nt{font-size:12px;font-weight:800;color:#f0eadd}.notify .nd{font-size:10.5px;color:#9aa08f}
+/* endings */
+.endWrap{position:absolute;inset:0;z-index:95;background:radial-gradient(circle at 50% 30%,#141926,#04050a 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center;overflow-y:auto}
+.endWrap h2{font-size:26px;color:var(--gold);margin:6px 0 14px;font-weight:800}
+.endWrap p{font-size:13.5px;line-height:2.2;color:#b9b4a6;max-width:340px;margin:0 0 16px}
+.statRow{display:flex;gap:8px;margin:12px 0 18px;flex-wrap:wrap;justify-content:center}
+.stat{background:#11151d;border:1px solid #262d3a;border-radius:13px;padding:11px 14px;min-width:82px}
+.stat b{display:block;font-size:18px;color:var(--gold)}.stat span{font-size:10px;color:#7d8376}
+/* loading */
+#loading{position:absolute;inset:0;z-index:98;background:#04050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:fadeIn .3s}
+.spin{width:52px;height:52px;border-radius:50%;border:3px solid #222a35;border-top-color:var(--gold);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loadBar{width:200px;height:5px;background:#14181f;border-radius:5px;overflow:hidden}
+.loadBar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+/* intro */
+#introCine{position:absolute;inset:0;z-index:99;background:#020306;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.introScene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;opacity:0;transition:opacity .8s}
+.introScene.on{opacity:1}
+.introEmoji{font-size:72px;margin-bottom:14px;filter:drop-shadow(0 10px 30px #000)}
+.introTxt{font-size:15px;line-height:2.1;color:#d8d2c2;max-width:320px}
+.introBig{font-size:110px;font-weight:800;color:#c0392b;text-shadow:0 0 60px rgba(192,57,43,.7);animation:zoom17 3s ease forwards}
+@keyframes zoom17{from{transform:scale(.4);opacity:0}to{transform:scale(1.15);opacity:1}}
+.truckMove{animation:truck 3.5s ease forwards}
+@keyframes truck{from{transform:translateX(-160px)}to{transform:translateX(0)}}
+.introProg{position:absolute;bottom:88px;width:70%;height:4px;background:#14181f;border-radius:4px;overflow:hidden}
+.introProg i{display:block;height:100%;width:0;background:var(--gold)}
+/* chapterDone + grand */
+.fullOver{position:absolute;inset:0;z-index:97;background:radial-gradient(circle at 50% 25%,#141926,#04050a 75%);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:26px 20px;overflow-y:auto;animation:fadeIn .5s}
+.fullOver h2{color:var(--gold);margin:8px 0 4px;font-size:22px}
+.doneGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;margin:14px 0}
+.doneCard{background:#11151d;border:1px solid #262d3a;border-radius:13px;padding:12px;text-align:center}
+.doneCard b{display:block;font-size:20px;color:var(--gold)}
+.doneCard span{font-size:10.5px;color:#8a9080}
+/* achievements */
+.achGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.achCard{background:#12161e;border:1px solid #222936;border-radius:13px;padding:12px;text-align:center}
+.achCard.unlocked{border-color:#6b5225;background:#1c1610}
+.achCard .aic{font-size:26px}.achCard .an{font-size:12px;font-weight:800;color:#ddd7c8;margin:4px 0 2px}.achCard .ad{font-size:10px;color:#767c6e;line-height:1.6}
+/* settings */
+.setRow{background:#12161e;border:1px solid #222936;border-radius:12px;padding:12px;margin-bottom:8px}
+.setRow label{font-size:12px;color:#ddd7c8;display:flex;justify-content:space-between;margin-bottom:8px;font-weight:600}
+.setRow input[type=range]{width:100%;accent-color:var(--gold);height:30px}
+.tglRow{display:flex;justify-content:space-between;align-items:center;background:#12161e;border:1px solid #222936;border-radius:12px;padding:13px;margin-bottom:8px;font-size:12.5px;color:#c4bfb1}
+.tgl{width:52px;height:28px;border-radius:20px;background:#222936;border:1px solid #2a3140;position:relative;cursor:pointer;flex-shrink:0}
+.tgl.on{background:#2c5a52;border-color:#3b6b63}
+.tgl::after{content:'';position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#8a9080;transition:.2s}
+.tgl.on::after{transform:translateX(-22px);background:var(--gold)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;background:#0b0e13;border:1px solid #222936;color:#8a9080;border-radius:10px;padding:10px;font-family:inherit;font-size:11px;cursor:pointer;min-height:44px}
+.seg button.on{background:#1e1810;border-color:#6b5225;color:var(--gold)}
+/* quality / accessibility */
+.q-low .grain,.q-low .dust{display:none}
+.q-low *{box-shadow:none!important}
+.frame.hc{filter:contrast(1.15)}
+.frame.hc .mText,.frame.hc .evNm{color:#fff}
+.frame.ts-small{font-size:13px}.frame.ts-large{font-size:17px}
+.frame.ts-large .mText{font-size:15.5px}.frame.ts-large .btn{font-size:16px}
+::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
-<body class="flex items-center justify-center bg-zinc-950">
-<div id="game-app">
-
-  <!-- ==================== HEADER ==================== -->
-  <header id="top-bar" class="w-full bg-stone-900/90 border-b-2 border-amber-600/40 p-2 z-20 flex justify-between items-center backdrop-blur shadow-md">
-    <div class="flex items-center space-x-2 space-x-reverse">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-stone-900 font-bold text-lg shadow-inner">
-        <i class="fa-solid fa-shop"></i>
-      </div>
-      <div class="text-right">
-        <div id="stage-name-badge" class="text-xs font-bold text-amber-400 truncate max-w-[110px]">كشك الحارة</div>
-        <div class="text-[10px] text-stone-400 font-semibold flex items-center gap-1 flex-wrap">
-          <span>مستوى <span id="kiosk-level" class="text-amber-300">★</span></span>
-          <span class="text-amber-500">•</span>
-          <span>يوم <span id="day-counter">1</span></span>
-          <span class="text-amber-500">•</span>
-          <span class="text-yellow-400"><i class="fa-solid fa-star text-[9px]"></i> <span id="rep-rating">4.8</span></span>
-        </div>
-      </div>
-    </div>
-    <div class="flex flex-col items-center">
-      <div class="text-[10px] text-amber-200 uppercase font-bold tracking-wider">وقت اليوم</div>
-      <div class="w-20 bg-stone-800 h-2.5 rounded-full overflow-hidden border border-stone-700 mt-0.5">
-        <div id="day-progress-bar" class="h-full bg-gradient-to-r from-yellow-500 to-amber-500 w-full transition-all duration-300"></div>
-      </div>
-    </div>
-    <div class="flex items-center bg-stone-950/80 border border-amber-500/40 rounded-full px-3 py-1 shadow-inner">
-      <span class="text-yellow-400 font-black text-sm ml-1.5">ج.م</span>
-      <span id="player-money" class="font-brand font-black text-emerald-400 text-lg tracking-wide">500</span>
-    </div>
-  </header>
-
-  <!-- ==================== MAIN CANVAS ==================== -->
-  <div id="game-view" class="relative flex-1 w-full overflow-hidden bg-stone-800">
-    <div class="awning w-full h-4 border-b-2 border-stone-900 shadow"></div>
-
-    <div id="event-toast" class="hidden absolute top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-amber-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg z-30 flex items-center gap-2 border border-yellow-300">
-      <i class="fa-solid fa-bolt text-yellow-300"></i>
-      <span id="event-toast-text">حدث خاص!</span>
-    </div>
-
-    <canvas id="kiosk-canvas" class="w-full h-full block touch-none"></canvas>
-
-    <!-- Carry tray -->
-    <div id="carry-tray">
-      <span class="text-[10px] font-bold text-amber-300 ml-0.5">يدك</span>
-      <div class="carry-slot" id="slot-0"></div>
-      <div class="carry-slot" id="slot-1"></div>
-      <div class="carry-slot" id="slot-2"></div>
-    </div>
-
-    <!-- Hint -->
-    <div id="quick-hint" class="absolute top-2 right-2 bg-black/60 text-stone-300 text-[10px] px-2.5 py-1 rounded-lg border border-stone-700 pointer-events-none max-w-[46%] leading-tight">
-      <i class="fa-solid fa-hand-pointer text-amber-400 ml-1"></i> حرّك بالجويستيك • اقترب واضغط «تفاعل»
-    </div>
-
-    <!-- Joystick -->
-    <div id="joystick-base"><div id="joystick-knob"></div></div>
-
-    <!-- Interaction panel -->
-    <div id="interact-panel" class="hidden"></div>
-  </div>
-
-  <!-- ==================== BOTTOM HUD ==================== -->
-  <nav class="w-full bg-stone-950 border-t-2 border-stone-800 p-2 z-20 flex justify-around items-center">
-    <button onclick="openModal('inventory-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <i class="fa-solid fa-boxes-stacked text-amber-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">المخزن</span>
-    </button>
-    <button onclick="openModal('upgrades-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <i class="fa-solid fa-arrow-up-right-dots text-emerald-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">التطوير</span>
-    </button>
-    <button onclick="openModal('stages-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <i class="fa-solid fa-map-location-dot text-cyan-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">المراحل</span>
-    </button>
-    <button onclick="openModal('quests-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <div class="relative">
-        <i class="fa-solid fa-clipboard-check text-purple-400 text-lg"></i>
-        <span id="quest-alert-badge" class="hidden absolute -top-1 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
-      </div>
-      <span class="text-[10px] font-bold text-stone-200 mt-0.5">المهام</span>
-    </button>
-    <button onclick="openModal('achievements-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <i class="fa-solid fa-trophy text-yellow-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">الإنجازات</span>
-    </button>
-    <button onclick="openModal('settings-modal')" class="btn-3d flex flex-col items-center justify-center w-11 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
-      <i class="fa-solid fa-gear text-stone-400 text-lg"></i><span class="text-[10px] font-bold text-stone-300 mt-0.5">ضبط</span>
-    </button>
-  </nav>
-
-  <!-- ==================== MODALS ==================== -->
-
-  <!-- START -->
-  <div id="start-menu-modal" class="absolute inset-0 bg-stone-950/95 z-50 flex flex-col items-center justify-between p-6 text-center">
-    <div class="w-full pt-8 flex flex-col items-center">
-      <div class="awning w-48 h-6 rounded-t-lg shadow-lg"></div>
-      <div class="bg-gradient-to-b from-amber-600 to-yellow-600 px-8 py-3 rounded-b-2xl border-2 border-yellow-300 shadow-2xl flex flex-col items-center">
-        <h1 class="font-brand text-5xl font-black text-stone-950 tracking-wider">كِـشْـكْ</h1>
-        <span class="text-xs font-bold text-stone-900 bg-yellow-300 px-3 py-0.5 rounded-full mt-1">نسخة الأندرويد الأصلية</span>
-      </div>
-      <p class="text-amber-200 font-semibold text-sm mt-4 px-4 leading-relaxed">"ابدأ بكشك صغير في الحارة... وابنِ إمبراطوريتك التجارية!"</p>
-    </div>
-    <div class="my-auto flex flex-col items-center animate-float">
-      <div class="w-28 h-28 bg-stone-800 border-4 border-amber-500 rounded-full flex items-center justify-center text-5xl shadow-2xl shadow-amber-500/20">🏪</div>
-      <div class="flex gap-2 mt-4 text-xs font-bold text-stone-400">
-        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🥤 مشروبات</span>
-        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🍫 حلويات</span>
-        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🍦 مثلجات</span>
-      </div>
-    </div>
-    <div class="w-full space-y-3 pb-6">
-      <button onclick="startGame()" class="btn-3d w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950 font-brand font-black text-2xl rounded-2xl shadow-xl flex items-center justify-center gap-2 border-2 border-yellow-200">
-        <i class="fa-solid fa-play text-xl"></i><span>ابدأ اللعب الآن</span>
-      </button>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="openModal('upgrades-modal')" class="btn-3d py-3 bg-stone-800 border border-stone-700 text-amber-300 font-bold rounded-xl text-sm">
-          <i class="fa-solid fa-arrow-up-right-dots ml-1"></i> التطويرات
-        </button>
-        <button onclick="openModal('settings-modal')" class="btn-3d py-3 bg-stone-800 border border-stone-700 text-stone-300 font-bold rounded-xl text-sm">
-          <i class="fa-solid fa-gear ml-1"></i> الإعدادات
-        </button>
-      </div>
-      <div class="text-[11px] text-stone-500 pt-1">حفظ تلقائي على ذاكرة الهاتف • تعمل بدون إنترنت</div>
-    </div>
-  </div>
-
-  <!-- INVENTORY -->
-  <div id="inventory-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-boxes-stacked text-amber-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">شراء البضاعة / المخزن</h2>
-      </div>
-      <button onclick="closeModal('inventory-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div id="inventory-list" class="flex-1 overflow-y-auto py-3 space-y-2.5"></div>
-    <div class="pt-2 border-t border-stone-800 grid grid-cols-2 gap-2">
-      <button onclick="buyAllStock()" class="btn-3d py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2">
-        <i class="fa-solid fa-cart-flatbed"></i><span>تزويد كل النواقص</span>
-      </button>
-      <button onclick="restockRequested()" class="btn-3d py-3 bg-gradient-to-r from-amber-600 to-yellow-500 text-stone-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles"></i><span>تزويد طلبات الزبائن</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- UPGRADES -->
-  <div id="upgrades-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-screwdriver-wrench text-emerald-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">تطوير وتجهيز الكشك</h2>
-      </div>
-      <button onclick="closeModal('upgrades-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div id="upgrades-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
-    <div class="pt-2 border-t border-stone-800 text-center text-xs text-stone-400">كل تطوير يزيد سرعة المبيعات وربحية الكشك</div>
-  </div>
-
-  <!-- STAGES -->
-  <div id="stages-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-map-location-dot text-cyan-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">مراحل التوسع والفروع</h2>
-      </div>
-      <button onclick="closeModal('stages-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div id="stages-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
-  </div>
-
-  <!-- QUESTS -->
-  <div id="quests-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-list-check text-purple-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">المهام اليومية والمكافآت</h2>
-      </div>
-      <button onclick="closeModal('quests-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div id="quests-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
-  </div>
-
-  <!-- ACHIEVEMENTS -->
-  <div id="achievements-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-trophy text-yellow-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">سجل الإنجازات والبطولات</h2>
-      </div>
-      <button onclick="closeModal('achievements-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div id="achievements-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div id="settings-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
-    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-gear text-stone-400 text-xl"></i>
-        <h2 class="font-brand font-bold text-lg text-white">إعدادات اللعبة</h2>
-      </div>
-      <button onclick="closeModal('settings-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
-    </div>
-    <div class="flex-1 py-4 space-y-4 overflow-y-auto">
-      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
-        <div>
-          <div class="font-bold text-white text-sm">المؤثرات الصوتية (SFX)</div>
-          <div class="text-[11px] text-stone-400">أصوات البيع، الزبائن، والنجاح</div>
-        </div>
-        <button id="sfx-toggle" onclick="toggleSFX()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
-          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
-        </button>
-      </div>
-      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
-        <div>
-          <div class="font-bold text-white text-sm">الموسيقى الهادئة</div>
-          <div class="text-[11px] text-stone-400">موسيقى كرتونية خفيفة في الخلفية</div>
-        </div>
-        <button id="music-toggle" onclick="toggleMusic()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
-          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
-        </button>
-      </div>
-      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
-        <div>
-          <div class="font-bold text-white text-sm">الاهتزاز (Vibration)</div>
-          <div class="text-[11px] text-stone-400">اهتزاز خفيف عند البيع والتطوير</div>
-        </div>
-        <button id="vib-toggle" onclick="toggleVib()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
-          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
-        </button>
-      </div>
-      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 text-xs space-y-1.5 text-stone-300">
-        <div class="font-bold text-amber-400 mb-2">عن لعبة كشك:</div>
-        <p>• الجويستيك للحركة داخل الكشك، وأزرار التفاعل تظهر عند الاقتراب.</p>
-        <p>• خُذ المنتجات من الرفوف والثلاجة وسلّمها للزبائن على الكاونتر.</p>
-        <p>• يعمل المشروع دون الحاجة لاتصال بالإنترنت.</p>
-        <p>• جميع بياناتك محفوظة تلقائيًا في ذاكرة الجهاز.</p>
-      </div>
-      <div class="pt-2">
-        <button onclick="confirmResetData()" class="btn-3d w-full py-3 bg-red-950 border border-red-700 text-red-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
-          <i class="fa-solid fa-triangle-exclamation"></i><span>إعادة ضبط اللعبة ومسح التقدم</span>
-        </button>
-      </div>
-    </div>
-    <div class="text-center text-[10px] text-stone-500 pb-1">إصدار 2.0.0 (Android Native Hybrid Engine)</div>
-  </div>
-
-  <!-- DAY SUMMARY -->
-  <div id="day-summary-modal" class="hidden absolute inset-0 bg-stone-950/95 z-50 p-5 flex flex-col justify-between text-center pop-in">
-    <div class="pt-4">
-      <div class="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 border-2 border-amber-500 rounded-full flex items-center justify-center text-3xl mb-2">🌙</div>
-      <h2 class="font-brand font-black text-3xl text-yellow-400">انتهى اليوم!</h2>
-      <p class="text-xs text-stone-400 mt-1">تقرير أداء وحسابات اليوم <span id="summary-day-num" class="text-amber-300 font-bold">1</span></p>
-    </div>
-    <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 space-y-2.5 text-sm my-auto">
-      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
-        <span>إجمالي المبيعات:</span><span class="font-bold text-emerald-400">+<span id="sum-revenue">0</span> ج.م</span>
-      </div>
-      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
-        <span>تكلفة البضاعة المباعة:</span><span class="font-bold text-red-400">-<span id="sum-cost">0</span> ج.م</span>
-      </div>
-      <div class="flex justify-between text-white font-bold text-base bg-stone-800/60 p-2 rounded-xl">
-        <span>صافي الربح:</span><span class="text-yellow-400"><span id="sum-profit">0</span> ج.م</span>
-      </div>
-      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5 pt-1">
-        <span>عدد الزبائن المخدومين:</span><span class="font-bold text-cyan-300"><span id="sum-served">0</span> زبون</span>
-      </div>
-      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
-        <span>زبائن غادروا غاضبين:</span><span class="font-bold text-red-400"><span id="sum-lost">0</span> زبون</span>
-      </div>
-      <div class="flex justify-between items-center pt-1">
-        <span class="text-stone-300">تقييم اليوم:</span><span id="sum-stars" class="text-yellow-400 text-lg tracking-widest">⭐⭐⭐⭐⭐</span>
-      </div>
-    </div>
-    <div class="pb-4">
-      <button onclick="startNextDay()" class="btn-3d w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950 font-brand font-black text-xl rounded-2xl shadow-xl flex items-center justify-center gap-2">
-        <i class="fa-solid fa-sun text-xl"></i><span>ابدأ يوم جديد الآن</span>
-      </button>
-    </div>
-  </div>
-
+<body>
+<div id="app"><div class="frame" id="frame">
+<section id="start" class="screen">
+<div class="homeBg"></div><div class="homeGlow"></div><div class="dust" id="dust"></div>
+<div class="homeBoxArt">📦<span>17</span></div><div class="vig"></div>
+<div class="startInner">
+<div class="playerBadge" id="homeBadge"><div class="pbAv">🕵️</div><div class="pbInfo"><div class="pbLvl" id="pbLvl">مبتدئ</div><div class="pbXp" id="pbXp">0 XP</div><div class="xpbar"><div class="xpfill" id="homeXpFill"></div></div></div><div style="font-size:22px" id="pbTokens" title="نقاط التلميح">💡0</div></div>
+<div class="tag">تحقيق تفاعلي • نسخة احترافية</div>
+<h1>الصندوق <span>١٧</span></h1>
+<p class="sub">شحنة بلا مرسل… بلا مستلم… وبلا اسم.<br>سلسلة أحداث بدأت قبل ست سنوات، ولم ينتهِ منها أحد.</p>
+<div class="homeGrid">
+<button class="btn primary" id="btnNew">▶ ابدأ التحقيق</button>
+<button class="btn ghost" id="btnCont">⏵ متابعة التحقيق</button>
+<button class="btn goldline hidden" id="btnNGPlus">✨ تحقيق جديد+ (محتوى إضافي)</button>
+<div class="homeRow2"><button class="btn ghost" id="btnChapters">🗂 اختيار الفصل</button><button class="btn ghost" id="btnFileHome">📁 ملف التحقيق</button></div>
+<div class="homeRow2"><button class="btn ghost" id="btnCodex">📚 ملف القضية</button><button class="btn ghost" id="btnSide">🧭 المهمات الجانبية</button></div>
+<div class="homeRow2"><button class="btn ghost" id="btnAch">🏆 الإنجازات</button><button class="btn ghost" id="btnStats">📊 الإحصائيات</button></div>
+<button class="btn ghost" id="btnSettings">⚙ الإعدادات</button>
 </div>
-
+<div class="hintline">١٠ فصول • ٣ نهايات • ٥ مهمات جانبية • ١٠ إنجازات • نظام XP</div>
+</div>
+</section>
+<section id="game" class="screen hidden">
+<header id="top"><div class="topRow"><div style="flex:1"><div class="stgNum" id="stgNum">المرحلة ١ / ١٠</div><div class="stgTitle" id="stgTitle">—</div><div class="place" id="stgPlace">—</div><div class="lvlLine" id="lvlLine">🕵️ مبتدئ • 0 XP • 💡12 <span class="saveDot" id="saveDot">✓ حفظ تلقائي</span></div></div><button class="iconbtn" id="btnMenu">☰</button></div><div class="pbar"><div class="pfill" id="pfill"></div></div><div class="xpbarMini"><div class="xpfill" id="gameXpFill" style="height:100%"></div></div><div class="goal" id="stgGoal"><b>الهدف:</b><span>—</span></div></header>
+<div class="scene" id="scene"><div class="art" id="art"></div><div class="torch" id="torch"></div><div class="vignette"></div><div class="grain"></div><div class="hotspots" id="hotspots"></div></div>
+<nav id="hud"><button class="hbtn" id="hFile"><span class="ic">📁</span>ملف التحقيق</button><button class="hbtn" id="hTasks"><span class="ic">✓</span>المهام</button><button class="hbtn" id="hHint"><span class="ic">💡</span>تلميح<span class="badgeCount" id="hintCount">12</span></button><button class="hbtn" id="hNotes"><span class="ic">📝</span>ملاحظاتي</button><button class="hbtn" id="hSound"><span class="ic">🔇</span>الصوت</button></nav>
+</section>
+<div id="modal" class="modal hidden"><div class="modalBox" id="modalBox"></div></div>
+<div id="sheet" class="sheet hidden"><div class="sheetBox" id="sheetBox"></div></div>
+<div id="cine" class="cine hidden"><div class="cineBars"></div><div class="cineText" id="cineText"></div></div>
+<div id="toast" class="toast"></div>
+<div id="notifyWrap"></div>
+<div id="loading" class="hidden"><div class="spin"></div><div class="mTitle" id="loadingText">جاري التحميل...</div><div class="loadBar"><i id="loadFill"></i></div><div style="font-size:11px;color:#5e6559" id="loadTip">تلميح: افحص كل زاوية قبل المغادرة</div></div>
+<div id="introCine" class="hidden">
+<div class="introScene" id="is1"><div class="introEmoji truckMove">🚚</div><div class="introTxt">ليل ممطر... شاحنة قديمة تصل إلى مخزن «النور للشحن»<br>الساعة 11:47 مساءً</div></div>
+<div class="introScene" id="is2"><div class="introEmoji">📦</div><div class="introTxt">يتم إنزال صندوق خشبي قديم... ثقيل بشكل غريب<br>لا اسم للمرسل... ولا للمستلم</div></div>
+<div class="introScene" id="is3"><div class="introEmoji">🧾</div><div class="introTxt">بطاقة الشحن صفراء باهتة<br>التاريخ: 2019/12/03<br>المرسل: «ن» فقط</div></div>
+<div class="introScene" id="is4"><div class="introBig">17</div><div class="introTxt">الكاميرا تقترب من الرقم الأحمر الباهت...</div></div>
+<div class="introScene" id="is5"><div class="introEmoji">🕵️</div><div class="introTxt" style="font-size:17px;color:var(--gold);font-weight:600">«قبل أن تفتح الصندوق...<br>اسأل نفسك لماذا وصل الآن؟»</div></div>
+<div class="introProg"><i id="introFill"></i></div>
+<button class="cineSkip" id="introSkip">تخطي المقدمة ▸</button>
+</div>
+<div id="chapterDone" class="fullOver hidden"><div class="tag">تقرير المحقق</div><h2 id="cdTitle">الفصل مكتمل ✓</h2><div class="mType" id="cdSub"></div><div class="doneGrid" id="cdGrid"></div><div class="mText" id="cdXp" style="text-align:center"></div><button class="btn primary" id="cdNext" style="width:100%;max-width:340px">متابعة ▸</button></div>
+<div id="grandWrap" class="fullOver hidden"><div class="tag">التقرير السينمائي الكامل</div><h2>ملف القضية ١٧ — مغلق</h2><div class="mType" id="grandEndName"></div><div class="mText" id="grandStory" style="text-align:center;max-width:360px"></div><div class="doneGrid" id="grandGrid"></div><div id="grandAch" style="width:100%;max-width:380px"></div><div style="display:flex;flex-direction:column;gap:9px;width:100%;max-width:340px;margin-top:10px"><button class="btn primary" id="grandHome">🏠 القائمة الرئيسية</button><button class="btn goldline" id="grandNG" >✨ تحقيق جديد+</button></div></div>
+</div></div>
 <script>
-/* =============================================================
-   POLYFILL roundRect
-   ============================================================= */
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-    if (typeof r === 'number') r = [r, r, r, r];
-    if (!Array.isArray(r)) r = [0, 0, 0, 0];
-    const [tl, tr, br, bl] = r;
-    this.beginPath();
-    this.moveTo(x + tl, y);
-    this.lineTo(x + w - tr, y);
-    this.quadraticCurveTo(x + w, y, x + w, y + tr);
-    this.lineTo(x + w, y + h - br);
-    this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
-    this.lineTo(x + bl, y + h);
-    this.quadraticCurveTo(x, y + h, x, y + h - bl);
-    this.lineTo(x, y + tl);
-    this.quadraticCurveTo(x, y, x + tl, y);
-    this.closePath();
-    return this;
-  };
-}
-
-/* =============================================================
-   GAME DATA & CONFIGURATION
-   ============================================================= */
-const PRODUCTS = {
-  water:     { id:'water',     name:'مياه معدنية',  short:'مياه',    emoji:'💧', buy:3,  sell:7,  maxStock:25, station:'fridge',  unlockStage:0 },
-  juice:     { id:'juice',     name:'عصير علبة',     short:'عصير',    emoji:'🧃', buy:5,  sell:12, maxStock:20, station:'fridge',  unlockStage:0 },
-  soda:      { id:'soda',      name:'مشروب غازي',    short:'غازي',    emoji:'🥤', buy:7,  sell:15, maxStock:20, station:'fridge',  unlockStage:0 },
-  chips:     { id:'chips',     name:'شيبسي مصري',    short:'شيبسي',   emoji:'🥔', buy:4,  sell:10, maxStock:25, station:'shelf',   unlockStage:0 },
-  biscuit:   { id:'biscuit',   name:'بسكويت شاي',    short:'بسكويت',  emoji:'🍪', buy:3,  sell:8,  maxStock:25, station:'shelf',   unlockStage:0 },
-  chocolate: { id:'chocolate', name:'شوكولاتة',      short:'شوكولاتة',emoji:'🍫', buy:8,  sell:18, maxStock:20, station:'shelf',   unlockStage:1 },
-  icecream:  { id:'icecream',  name:'آيس كريم',      short:'آيس',     emoji:'🍦', buy:6,  sell:16, maxStock:15, station:'cooler',  unlockStage:1 }
+/* ================= الصندوق 17 - نسخة احترافية فوق المشروع الأصلي ================= */
+let AC=null,MASTER=null,musicOn=false,ambientNodes=null,creakTimer=null;
+function audioInit(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return;}MASTER=AC.createGain();MASTER.gain.value=0.55;MASTER.connect(AC.destination);}
+function curVol(k){try{return(S.settings[k]/100)||0;}catch(e){return .7;}}
+function tone(f,d,type,v,delay){if(!AC||!musicOn)return;try{const t=AC.currentTime+(delay||0);const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);const vv=(v||0.15)*(0.3+curVol('sfxVol'));g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vv),t+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g);g.connect(MASTER);o.start(t);o.stop(t+d+0.05);}catch(e){}}
+function noise(dur,freq,q,v){if(!AC||!musicOn)return;try{const len=Math.floor(AC.sampleRate*dur);const buf=AC.createBuffer(1,len,AC.sampleRate);const dd=buf.getChannelData(0);for(let i=0;i<len;i++)dd[i]=(Math.random()*2-1)*(1-i/len);const src=AC.createBufferSource();src.buffer=buf;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=freq||900;f.Q.value=q||1;const g=AC.createGain();g.gain.value=(v||0.12)*(0.3+curVol('sfxVol'));src.connect(f);f.connect(g);g.connect(MASTER);src.start();}catch(e){}}
+const SFX={click:()=>tone(520,0.06,'triangle',0.09),found:()=>{tone(660,0.35,'sine',0.14,0);tone(880,0.4,'sine',0.11,0.09);tone(1320,0.5,'sine',0.07,0.18);},paper:()=>noise(0.32,2400,1.6,0.10),unlock:()=>{tone(300,0.16,'square',0.10,0);tone(450,0.16,'square',0.10,0.1);tone(700,0.4,'sine',0.13,0.2);},err:()=>{tone(150,0.28,'sawtooth',0.13,0);tone(110,0.34,'sawtooth',0.11,0.06);},heart:()=>{tone(58,0.4,'sine',0.22,0);tone(52,0.5,'sine',0.16,0.16);},step:()=>noise(0.14,420,1.1,0.07),link:()=>{tone(420,0.5,'sine',0.10,0);tone(630,0.6,'sine',0.08,0.12);},dark:()=>noise(1.4,180,0.7,0.09)};
+function startAmbient(){if(!AC||ambientNodes)return;try{const g=AC.createGain();g.gain.value=0.0001;g.connect(MASTER);const mv=0.08+curVol('musicVol')*0.35;g.gain.linearRampToValueAtTime(mv,AC.currentTime+4);const o1=AC.createOscillator();o1.type='sine';o1.frequency.value=55;const o2=AC.createOscillator();o2.type='sine';o2.frequency.value=82.41;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=320;o1.connect(lp);o2.connect(lp);lp.connect(g);o1.start();o2.start();ambientNodes={g,o1,o2};creakTimer=setInterval(()=>{if(!musicOn||!AC)return;const r=Math.random();if(r<0.35)noise(0.9,260+Math.random()*300,3.5,0.055);},8500);}catch(e){}}
+function applyVolumes(){if(!AC||!ambientNodes)return;try{const mv=musicOn?(0.08+curVol('musicVol')*0.35):0.0001;ambientNodes.g.gain.setTargetAtTime(mv,AC.currentTime,0.5);}catch(e){}}
+/* ---------- LEVELS / XP / ACH / SIDE ---------- */
+const LEVELS=[{xp:0,n:'مبتدئ'},{xp:100,n:'متدرب'},{xp:250,n:'محقق'},{xp:500,n:'محقق محترف'},{xp:800,n:'محقق خبير'},{xp:1200,n:'محقق أسطوري'}];
+function getLevel(xp){let idx=0;LEVELS.forEach((l,i)=>{if(xp>=l.xp)idx=i;});const cur=LEVELS[idx],nxt=LEVELS[idx+1]||null;let pct=100;if(nxt)pct=Math.round((xp-cur.xp)/(nxt.xp-cur.xp)*100);return{idx,name:cur.n,next:nxt,pct:Math.min(100,Math.max(0,pct))};}
+const ACH={ach_start:{n:'البداية',d:'ابدأ التحقيق',ic:'🚪'},ach_first:{n:'أول دليل',d:'اكتشف أول دليل',ic:'🔍'},ach_hawk:{n:'عين الصقر',d:'اجمع 10 أدلة',ic:'🦅'},ach_watch:{n:'المراقب',d:'افحص 5 نقاط اختيارية',ic:'👁'},ach_nohelp:{n:'بدون مساعدة',d:'أكمل فصلاً بدون تلميحات',ic:'💪'},ach_secrets:{n:'جامع الأسرار',d:'اكتشف 3 أسرار',ic:'🗝'},ach_real:{n:'المحقق الحقيقي',d:'حل 5 ألغاز',ic:'🧠'},ach_truth:{n:'الحقيقة كاملة',d:'اربط التسجيل بسجل الشحنات',ic:'🔗'},ach_all:{n:'كل شيء انكشف',d:'اجمع 26 دليلاً',ic:'💎'},ach_secret:{n:'النهاية السرية',d:'احصل على نهاية الحقيقة',ic:'🔥'}};
+const SIDE={sm1:{n:'جامع القصاصات',d:'اعثر على 3 قصاصات مخفية (فصول 1، 5، 7)',ic:'🧻',need:3},sm2:{n:'عين المراقب',d:'افحص 6 نقاط اختيارية',ic:'👁',need:6},sm3:{n:'بدون مساعدة',d:'أكمل فصلاً كاملاً دون تلميح',ic:'💪',need:1},sm4:{n:'خبير الأقفال',d:'حل 3 ألغاز رموز من أول محاولة',ic:'🔐',need:3},sm5:{n:'المستجوب',d:'أنهِ 3 استجوابات كاملة',ic:'🗣',need:3}};
+const PLACES=[{n:'مخزن النور للشحن',d:'مخزن قديم، شحنات بلا أسماء، والرقم 17 يعود دائماً.',s:1},{n:'مكتب المخزن',d:'أوراق، حاسوب، ودرج لا يفتح إلا بتاريخ توقف فيه كل شيء.',s:2},{n:'شقة مريم',d:'شقة صامتة منذ 2019، وجهاز رد آلي لامع الزر.',s:3},{n:'سوق الحديد',d:'دكان الحاج نجيب، دفتر أجور، وأسئلة بلا أجوبة.',s:4},{n:'أرشيف الشركة',d:'قبو بارد، سجل شحنات، وخزنة منسية.',s:5},{n:'كشك الشحن',d:'تسع شاشات، واحدة سوداء، و12 دقيقة مفقودة.',s:6},{n:'الأرشيف الصحفي',d:'ميكروفيلم وحريق قديم واسم محروق.',s:7},{n:'المستودع B1',d:'مستودع تحت المخزن، ظلام ورقم محفور: 1203.',s:8},{n:'غرفة التسجيلات',d:'شريط واحد، وتسجيل أخير بصوت نادر.',s:9},{n:'مخزن الليلة الأخيرة',d:'مواجهة أخيرة، وقرار لا رجعة فيه.',s:10}];
+const EVENTS=[{n:'2018 — الحريق',d:'حريق في مستودع الأرشيف الصحفي أتلف تحقيقاً عن شحنات طبية.'},{n:'2019/09 — وصول مريم',d:'مريم مراد تبدأ العمل كموظفة إدخال بيانات.'},{n:'2019/12/03 — وصول الصندوق',d:'الصندوق 17 يصل أول مرة بلا مرسل معروف.'},{n:'2019/12/04 — الاختفاء',d:'آخر يوم عمل مسجل لمريم، ثم صمت كامل.'},{n:'2021 — إعادة الإدخال',d:'الشحنة 17 تعود للسجل دون تسليم.'},{n:'اليوم — العودة',d:'الصندوق يظهر مجدداً بعد ست سنوات.'}];
+const TERMS=[{n:'شحنة بلا مرسل',d:'شحنة تائهة قانونياً، تبقى في المخزن ولا تُتلف بسهولة.'},{n:'القاع الزائف',d:'طبقة خشب رقيقة تخفي مظروفاً تحت الصندوق 17.'},{n:'بيان الشحن',d:'ورقة تثبت المرسل والمستلم والمحتوى. هنا: ن. مراد.'},{n:'الميكروفيلم',d:'نسخة مصغرة من الصحف القديمة، الناجي الوحيد من الحريق.'},{n:'التحقيق 17/ب',d:'ملف إداري أُغلق لعدم الكفاية... لكنه لم يمت.'},{n:'التوقيع ف',d:'حرف يظهر على كل بيان. يعود لفادي مسؤول الشحن.'}];
+/* ---------- EVIDENCE ---------- */
+const EV={
+e_box17:{t:'دليل',n:'الصندوق رقم ١٧',ic:'📦',d:'صندوق خشبي قديم، ثقيل بشكل غير متوقع. الرقم ١٧ مطبوع بالأحمر. الرائحة: ورق قديم وزيت آلات.'},
+e_label:{t:'مستند',n:'بوليصة الشحن',ic:'📄',d:'ورقة صفراء. المرسل ممسوح إلا من حرف «ن». المستلم: شركة النور. التاريخ: ٢٠١٩/١٢/٠٣.\nعلى ظهرها رقم الإيصال: ٢٤٩.'},
+e_log:{t:'مستند',n:'دفتر يومية المخزن',ic:'📒',d:'شحنة ١٧ مسجلة ثلاث مرات: ٢٠١٩، ٢٠٢١، واليوم. لم يوقع أحد على الاستلام. التوقيع: ف.'},
+e_stamp:{t:'دليل',n:'ختم مطاطي مهترئ',ic:'🔴',d:'مخبأ خلف أعلى رف. الحروف: «ف. م». نفس الحرفين على كل بيان صادر.'},
+e_key:{t:'دليل',n:'مفتاح نحاسي صغير',ic:'🗝️',d:'مفتاح صغير بحجم قاع صندوق. لا خزانة بهذا الحجم في المخزن.'},
+e_note1:{t:'ملاحظة',n:'مذكرة داخل الصندوق',ic:'🗒️',d:'«إذا وصل متأخراً فأنا لم أعد هنا. لا تسلمه لأحد. القاع الزائف يحتاج مفتاحاً — وهو في المكان الذي تركتك فيه. — م»'},
+e_photo_team:{t:'صورة',n:'الصورة الجماعية',ic:'🖼️',d:'خمسة أشخاص أمام المخزن. على ظهرها: آخر يوم ٤/١٢/٢٠١٩. وجه الخامس مخدوش تماماً.'},
+e_drawer:{t:'مستند',n:'ملف مريم',ic:'🗂️',d:'تقرير بخط يد عن شحنات أدوية منتهية تُعاد تعبئتها، وقائمة شحنات، وصورة رف فيه ٨ صناديق.'},
+e_contract:{t:'مستند',n:'عقد عمل مريم',ic:'📜',d:'عقد مؤقت: مريم مراد — إدخال بيانات — ٢٠١٩/٠٩/٠١. ملاحظة: لم تحضر منذ ٥/١٢.'},
+e_email:{t:'مستند',n:'رسالة من فادي',ic:'💻',d:'«موضوع: ملف ١٧. تخلصوا من الملف. لا أريد أي ورقة تحمل هذا الرقم.»'},
+e_samer:{t:'شخصية',n:'سامر — الموظف القديم',ic:'🧔',d:'يعمل منذ ٢٢ عاماً. آخر من رأى مريم، ولم يتقدم بإفادة.'},
+e_maryam:{t:'شخصية',n:'مريم مراد',ic:'👩',d:'موظفة إدخال، ٤ أشهر فقط. ذكية وتسأل كثيراً. آخر ظهور: ٢٠١٩/١٢/٠٤.'},
+e_tape:{t:'تسجيل',n:'رسالة الرد الآلي',ic:'🎧',d:'صوت رجل متعب: «مريم... الملف عاد للظهور. لا تفتحيه. لا تذهبي للمخزن وحدك.»'},
+e_letter_m:{t:'مستند',n:'رسالة بخط مريم',ic:'✉️',d:'«خبأت الدليل في مكان لا يُحرق ولا يُباع: في شحنة بلا اسم. صندوق رقمه ١٧.»'},
+e_tornphoto:{t:'صورة',n:'الصورة الممزقة',ic:'🧩',d:'مريم بجانب رجل يشبهها أمام الأرشيف الصحفي. على ظهرها: أخي... الباقي عندك.'},
+e_cal:{t:'ملاحظة',n:'تقويم الشقة',ic:'📅',d:'متوقف على ١٢/٢٠١٩. اليوم الرابع بدائرة حمراء: لا أعود للمخزن بعد اليوم.'},
+e_najib:{t:'شخصية',n:'الحاج نجيب',ic:'👴',d:'صاحب المخزن. أوقف النشاط رسمياً ٢٠٢٠ لكنه يأتي كل أسبوع.'},
+e_wage:{t:'مستند',n:'دفتر أجور سوق الحديد',ic:'📗',d:'مبالغ بلا أسماء مقابل تحميل. أحدها: شحنة خاصة — ١٧.'},
+e_najib_story:{t:'ملاحظة',n:'شهادة نجيب',ic:'📝',d:'يزعم أنه لم ير الصندوق وأغلق المخزن ٢٠١٩. لكن الدفتر والتقويم يكذبان ذلك.'},
+e_registry:{t:'مستند',n:'سجل الشحنات الرئيسي',ic:'📚',d:'ثلاث صفحات برقم ١٧: ٢٠١٩ وردت، ٢٠٢١ أعيد إدخالها، اليوم وردت مجدداً. بقيت مصونة بيد أحدهم.'},
+e_safe:{t:'مستند',n:'محتويات الخزنة',ic:'🔐',d:'مظروف بني: صورة بيان ١٧ ومفتاحان وورقة بأربع توقيعات. واحد فقط لم يستلم رشوة.'},
+e_archive_note:{t:'ملاحظة',n:'قصاصة في الأرشيف',ic:'🗒️',d:'«...يطلب إغلاق الملف ١٧/ب لعدم كفاية...» — البقية مفقودة.'},
+e_cctv:{t:'تسجيل',n:'شريط الكاميرا',ic:'📹',d:'ليلة ٤/١٢/٢٠١٩. من ٢٢:٤٨ إلى ٢٣:٠٠ — ١٢ دقيقة مقطوعة بالمقص.'},
+e_fadi:{t:'شخصية',n:'فادي — مسؤول الشحن',ic:'🧑‍💼',d:'يوقع كل شيء ولا يتذكر شيئاً. حرف ف على كل بيان.'},
+e_fadi2:{t:'ملاحظة',n:'اعتراف فادي الجزئي',ic:'🗣️',d:'«أنا فقط وقعت. الحاج طلب ترك الشحنة دون تسليم. هناك من طلب ذلك. ليس أنا.»'},
+e_news:{t:'مستند',n:'خبر قديم',ic:'📰',d:'حريق ٢٠١٨ في مستودع الأرشيف. الملفات المحروقة تخص شحنات طبية غير مطابقة.'},
+e_nader:{t:'شخصية',n:'نادر مراد',ic:'🕵️',d:'صحفي حر، شقيق مريم. اختفى ٢٠١٩. توقيعه: حرف ن فقط.'},
+e_photo2:{t:'صورة',n:'صورة نادر ومريم',ic:'📷',d:'نادر أمام ملفات ومريم خلفه. «المادة كلها عندك. أنا آخذ الشحنات.»'},
+e_box18:{t:'دليل',n:'الصندوق رقم ١٨',ic:'📦',d:'مطابق لـ ١٧ لكنه ممزق. بداخله كيس وملصق «أعيد تحويله». هناك سلسلة كاملة.'},
+e_manifest:{t:'مستند',n:'بيان شحنة ١٧ الأصلي',ic:'🧾',d:'المرسل: ن. مراد. المستلم: أرشيف النور. المحتوى: مستندات ٤ كغ. الاستلام: فارغ.'},
+e_toolbox:{t:'دليل',n:'علبة عدة مخبأة',ic:'🧰',d:'مفك وقصاصة: القاع الزائف لا يفتح بالمفاتيح. يفتح بالتاريخ الذي بدأ فيه كل شيء.'},
+e_record:{t:'تسجيل',n:'التسجيل الكامل',ic:'🎙️',d:'نادر: مريم اكتشفت إعادة تعبئة أدوية منتهية. أرسلت الدليل عبر الشحنات لأنها لا تُحرق.'},
+e_truth:{t:'ملاحظة',n:'الحقيقة المركبة',ic:'🔗',d:'الصندوق لم يصل بالخطأ. كان يُنقل عمداً داخل المخزن ليبقى في مكان لا يُتلف دون سجل. المرسل: نادر.'},
+e_hidden:{t:'دليل',n:'القاع الزائف',ic:'📜',d:'مظروف بنسخ أصلية وبطاقة: إلى من وجد هذا: أنت الآن جزء من الملف. — م'},
+e_final_note:{t:'ملاحظة',n:'ورقة المواجهة',ic:'🧷',d:'«الليلة الرقم ١٧ خرج من الظل. لم يكن سرياً — بل مؤجلاً.»'},
+e_ng1:{t:'مستند',n:'[+ ] تقرير نادر السري',ic:'📁',d:'(تحقيق جديد+) مسودة لم تُنشر: أسماء ثلاث عيادات استلمت شحنات معاد تعبئتها.'},
+e_ng2:{t:'دليل',n:'[+ ] مفتاح الغرفة الجانبية',ic:'🔑',d:'(تحقيق جديد+) مفتاح صدئ لغرفة صغيرة خلف الأرشيف. بداخلها نسخ احتياطية.'},
+e_ng3:{t:'صورة',n:'[+ ] صورة السوق ليلاً',ic:'🌙',d:'(تحقيق جديد+) سيارة بلا لوحات أمام دكان نجيب ليلة ٣/١٢/٢٠١٩.'},
+e_ng4:{t:'ملاحظة',n:'[+ ] رسالة مريم الأخيرة',ic:'💌',d:'(تحقيق جديد+) «إن قرأت هذا في المرة الثانية، فاعلم أنني تركت لك الطريق الأقصر.»'},
+e_ng5:{t:'مستند',n:'[+ ] خريطة المستودع',ic:'🗺',d:'(تحقيق جديد+) خريطة B1 بخط نادر، عليها علامة: هنا انتظرت ٦ سنوات.'}
 };
-
-const CUSTOMER_TYPES = [
-  { id:'student', name:'طالب مدرسة',   avatar:'👦', patience:24, items:['chips','juice','biscuit'],  walkSpeed:68, tipProb:0.10, payMul:1.0 },
-  { id:'worker',  name:'موظف حكومي',   avatar:'👨‍💼', patience:21, items:['water','soda','biscuit'], walkSpeed:56, tipProb:0.20, payMul:1.05 },
-  { id:'youth',   name:'شاب روش',      avatar:'🧑',  patience:19, items:['soda','chips','chocolate'],walkSpeed:76, tipProb:0.25, payMul:1.1 },
-  { id:'elder',   name:'عم صبحي',      avatar:'👴',  patience:30, items:['water','biscuit'],          walkSpeed:44, tipProb:0.15, payMul:1.0 },
-  { id:'kid',     name:'طفل مع والدته',avatar:'🧒',  patience:22, items:['icecream','chocolate','juice'], walkSpeed:62, tipProb:0.30, payMul:1.15 },
-  { id:'hurry',   name:'زبون مستعجل',  avatar:'🏃',  patience:13, items:['water','soda'],             walkSpeed:96, tipProb:0.40, payMul:1.2 },
-  { id:'vip',     name:'زبون VIP',     avatar:'🕴️', patience:26, items:['chocolate','icecream','juice'], walkSpeed:60, tipProb:0.75, payMul:2.4 }
-];
-
-const STAGES = [
-  { id:0, name:'كشك الحارة',          cost:0,     maxCustomers:2, mult:1.00, desc:'بداية بسيطة في حارة شعبية هادئة', reqServed:0 },
-  { id:1, name:'كشك الشارع',          cost:1500,  maxCustomers:3, mult:1.25, desc:'على ناصية شارع رئيسي مليان حركة', reqServed:25 },
-  { id:2, name:'الكشك المشهور',       cost:4000,  maxCustomers:4, mult:1.50, desc:'معروف في كل المنطقة وزباين طوابير', reqServed:80 },
-  { id:3, name:'كشك كبير',            cost:10000, maxCustomers:5, mult:2.00, desc:'كشك مودرن وثلاجات حديثة وبضاعة متنوعة', reqServed:180 },
-  { id:4, name:'إمبراطورية الأكشاك',  cost:25000, maxCustomers:6, mult:3.00, desc:'سلسلة أكشاك وأكبر مورد في المحافظة', reqServed:350 }
-];
-
-const UPGRADE_TYPES = {
-  speed:        { name:'سرعة حركة البائع',   icon:'fa-person-running',   baseCost:180, maxLevel:5, desc:'التحرك أسرع داخل الكشك' },
-  prepSpeed:    { name:'سرعة تجهيز الطلب',   icon:'fa-bolt',             baseCost:220, maxLevel:5, desc:'زيادة سعر البيع لكل منتج' },
-  fridgeCap:    { name:'حجم الثلاجة والرفوف',icon:'fa-cubes-stacked',    baseCost:260, maxLevel:5, desc:'زيادة السعة التخزينية للمنتجات' },
-  attraction:   { name:'ديكور وجذب الزبائن', icon:'fa-bullhorn',         baseCost:320, maxLevel:5, desc:'زيادة تدفق الزبائن ومستوى صبرهم' },
-  counterSpace: { name:'توسعة الكاونتر',     icon:'fa-cash-register',    baseCost:380, maxLevel:3, desc:'مساحة أكبر للبقشيش وخدمة أسرع' },
-  carryBag:     { name:'حقيبة التسوق',       icon:'fa-bag-shopping',     baseCost:500, maxLevel:2, desc:'حمل منتجات أكثر في المرة الواحدة' }
-};
-
-const INITIAL_QUESTS = [
-  { id:'q1', text:'بيع 5 منتجات للزبائن',            target:5,    current:0, reward:50,  type:'sell',       done:false, claimed:false },
-  { id:'q2', text:'خدمة 10 زبائن بنجاح',             target:10,   current:0, reward:100, type:'serve',      done:false, claimed:false },
-  { id:'q3', text:'تحقيق مبيعات بقيمة 200 ج.م',      target:200,  current:0, reward:80,  type:'money',      done:false, claimed:false },
-  { id:'q4', text:'شراء وتطوير أول ترقية للكشك',     target:1,    current:0, reward:75,  type:'upgrade',    done:false, claimed:false },
-  { id:'q5', text:'إنهاء يوم بدون خسارة أي زبون',    target:1,    current:0, reward:120, type:'perfectDay', done:false, claimed:false }
-];
-
-const INITIAL_ACHIEVEMENTS = [
-  { id:'a1', title:'أول بيعة مصري',   desc:'أول عملية بيع ناجحة في الكشك',              target:1,    current:0,   reward:30,  done:false, claimed:false },
-  { id:'a2', title:'صاحب محل شاطر',   desc:'اجمع أول 1,000 جنيه رصيد',                  target:1000, current:500, reward:150, done:false, claimed:false },
-  { id:'a3', title:'محبوب الجماهير',  desc:'خدمة 50 زبون مختلف',                        target:50,   current:0,   reward:250, done:false, claimed:false },
-  { id:'a4', title:'توسعة النشاط',    desc:'فتح المرحلة الثانية (كشك الشارع)',          target:1,    current:0,   reward:300, done:false, claimed:false },
-  { id:'a5', title:'تاجر محترف',      desc:'خدمة 150 زبون وتحقيق رقم قياسي',            target:150,  current:0,   reward:600, done:false, claimed:false },
-  { id:'a6', title:'ملك الكشك',       desc:'فتح المرحلة الخامسة (إمبراطورية الأكشاك)',  target:1,    current:0,   reward:1200,done:false, claimed:false }
-];
-
-/* =============================================================
-   GAME STATE
-   ============================================================= */
-const STORAGE_KEY = 'kiosk_egypt_save_data_v2';
-
-function makeDefaultState() {
-  return {
-    money: 500, day: 1, stage: 0,
-    dayTimer: 75, dayDuration: 75, dayRunning: false,
-    reputation: 4.8,
-    inventory: { water:20, juice:15, soda:15, chips:20, biscuit:20, chocolate:0, icecream:0 },
-    upgrades: { speed:1, prepSpeed:1, fridgeCap:1, attraction:1, counterSpace:1, carryBag:1 },
-    dayStats: { revenue:0, cost:0, served:0, lost:0, perfect:true },
-    totalStats: { served:0, sales:0, earned:0, upgradesBought:0, daysPlayed:0 },
-    quests: JSON.parse(JSON.stringify(INITIAL_QUESTS)),
-    achievements: JSON.parse(JSON.stringify(INITIAL_ACHIEVEMENTS)),
-    settings: { sfx:true, music:true, vib:true }
-  };
-}
-let state = makeDefaultState();
-
-/* =============================================================
-   ENTITIES
-   ============================================================= */
-const MAX_CARRY_BASE = 3;
-function maxCarry() { return MAX_CARRY_BASE + (state.upgrades.carryBag - 1); }
-
-let player = {
-  x: 200, y: 420, facing: 'down', walkT: 0, moving: false,
-  carrying: [], interactOpen: false, autoTarget: null, bob: 0
-};
-
-let customers = [];
-let particles = [];
-let lastTime = performance.now();
-let lastInteractKey = '__init__';
-let eventTimer = 22;
-let currentEvent = null;
-let dayEnding = false;
-let spawnCooldown = 1.5;
-
-/* =============================================================
-   STATIONS / COLLISION WORLD (virtual 400 x 560)
-   ============================================================= */
-const V_WIDTH = 400, V_HEIGHT = 560;
-const PLAYER_R = 15;
-
-const STATIONS = {
-  counter: { name:'كاونتر التسليم', type:'counter', rect:{ x:50,  y:130, w:300, h:45 }, icon:'🛎️' },
-  fridge:  { name:'ثلاجة المشروبات', type:'fridge',  rect:{ x:40,  y:260, w:60,  h:100 }, icon:'🧊' },
-  shelf:   { name:'رف المقرمشات',   type:'shelf',   rect:{ x:300, y:260, w:60,  h:100 }, icon:'🥨' },
-  storage: { name:'المخزن',          type:'storage', rect:{ x:35,  y:400, w:95,  h:70 },  icon:'📦' },
-  cooler:  { name:'فريزر الآيس كريم',type:'cooler',  rect:{ x:245, y:445, w:110, h:55 },  icon:'🍦' }
-};
-
-const SOLIDS = [
-  STATIONS.fridge.rect,
-  STATIONS.shelf.rect,
-  STATIONS.storage.rect,
-  STATIONS.cooler.rect
-];
-
-const BOUNDS = { x1: 40, y1: 192, x2: 360, y2: 520 };
-
-function canStand(x, y) {
-  if (x < BOUNDS.x1 || x > BOUNDS.x2 || y < BOUNDS.y1 || y > BOUNDS.y2) return false;
-  for (const s of SOLIDS) {
-    if (x + PLAYER_R > s.x && x - PLAYER_R < s.x + s.w &&
-        y + PLAYER_R > s.y && y - PLAYER_R < s.y + s.h) return false;
-  }
-  return true;
-}
-
-function distToRect(px, py, r) {
-  const cx = Math.max(r.x, Math.min(px, r.x + r.w));
-  const cy = Math.max(r.y, Math.min(py, r.y + r.h));
-  return Math.hypot(px - cx, py - cy);
-}
-
-/* =============================================================
-   AUDIO SYNTH
-   ============================================================= */
-let audioCtx = null;
-let musicNodes = null;
-function initAudio() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) audioCtx = new AC();
-  }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-}
-function tone(freq, dur, type, vol, delay, freq2) {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime + (delay || 0);
-  const osc = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  osc.type = type || 'sine';
-  osc.frequency.setValueAtTime(freq, now);
-  if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, now + dur);
-  g.gain.setValueAtTime(0.0001, now);
-  g.gain.exponentialRampToValueAtTime(vol || 0.2, now + 0.012);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-  osc.connect(g); g.connect(audioCtx.destination);
-  osc.start(now); osc.stop(now + dur + 0.03);
-}
-function playSound(type) {
-  if (!state.settings.sfx) return;
-  initAudio();
-  if (!audioCtx) return;
-  try {
-    switch (type) {
-      case 'cash':      tone(987.77, 0.12, 'triangle', 0.28, 0, 1318.51); tone(1567.98, 0.25, 'triangle', 0.16, 0.09); break;
-      case 'pickup':    tone(420, 0.09, 'sine', 0.2, 0, 880); break;
-      case 'drop':      tone(320, 0.1, 'sine', 0.18, 0, 180); break;
-      case 'angry':     tone(160, 0.3, 'sawtooth', 0.18, 0, 85); break;
-      case 'upgrade':   [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,0.2,'triangle',0.22,i*0.08)); break;
-      case 'error':     tone(200, 0.16, 'square', 0.12, 0, 130); break;
-      case 'bell':      tone(1046.5, 0.4, 'sine', 0.16, 0, 1046.5); tone(1318.5, 0.5, 'sine', 0.09, 0.02); break;
-      case 'coin':      tone(1318.51, 0.09, 'square', 0.11, 0); tone(1760, 0.1, 'square', 0.09, 0.06); break;
-      case 'day':       [392,523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,0.3,'triangle',0.2,i*0.11)); break;
-      case 'event':     tone(660,0.12,'square',0.16,0); tone(880,0.14,'square',0.16,0.12); break;
-      case 'grumble':   tone(120, 0.45, 'sawtooth', 0.13, 0, 70); break;
-    }
-  } catch (e) {}
-}
-/* Simple ambient music loop */
-function startMusic() {
-  if (!state.settings.music || !audioCtx || musicNodes) return;
-  try {
-    const master = audioCtx.createGain();
-    master.gain.value = 0.035;
-    master.connect(audioCtx.destination);
-    const notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
-    let idx = 0;
-    const g = audioCtx.createGain();
-    g.gain.value = 0.9;
-    g.connect(master);
-    const osc = audioCtx.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.value = notes[0];
-    osc.connect(g);
-    osc.start();
-    const timer = setInterval(() => {
-      if (!state.settings.music || !audioCtx) return;
-      idx = (idx + 1) % notes.length;
-      osc.frequency.setTargetAtTime(notes[idx], audioCtx.currentTime, 0.08);
-    }, 520);
-    musicNodes = { osc, master, timer };
-  } catch (e) {}
-}
-function stopMusic() {
-  if (!musicNodes) return;
-  try { clearInterval(musicNodes.timer); musicNodes.osc.stop(); musicNodes.master.disconnect(); } catch (e) {}
-  musicNodes = null;
-}
-
-function vibrate(pattern) {
-  if (!state.settings.vib) return;
-  if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} }
-}
-
-/* =============================================================
-   STORAGE
-   ============================================================= */
-function saveGame() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-}
-function loadGame() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('kiosk_egypt_save_data_v1');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const base = makeDefaultState();
-      state = {
-        ...base, ...parsed,
-        inventory: { ...base.inventory, ...(parsed.inventory || {}) },
-        upgrades:  { ...base.upgrades,  ...(parsed.upgrades  || {}) },
-        dayStats:  { ...base.dayStats,  ...(parsed.dayStats  || {}) },
-        totalStats:{ ...base.totalStats, ...(parsed.totalStats || {}) },
-        settings:  { ...base.settings,  ...(parsed.settings  || {}) },
-        quests: parsed.quests || base.quests,
-        achievements: parsed.achievements || base.achievements
-      };
-      state.dayRunning = false;
-    }
-  } catch (e) {}
-  syncToggles();
-  updateHUD();
-}
-function confirmResetData() {
-  if (confirm('هل أنت متأكد من مسح جميع بيانات اللعبة والبدء من الصفر؟')) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('kiosk_egypt_save_data_v1');
-    location.reload();
-  }
-}
-
-/* =============================================================
-   CANVAS
-   ============================================================= */
-const canvas = document.getElementById('kiosk-canvas');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = Math.floor(rect.width * dpr);
-  canvas.height = Math.floor(rect.height * dpr);
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = rect.height + 'px';
-}
-window.addEventListener('resize', resizeCanvas);
-window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
-
-function screenToVirtual(clientX, clientY) {
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: ((clientX - r.left) / r.width) * V_WIDTH,
-    y: ((clientY - r.top) / r.height) * V_HEIGHT
-  };
-}
-function virtualToScreen(vx, vy) {
-  const r = canvas.getBoundingClientRect();
-  return { x: (vx / V_WIDTH) * r.width, y: (vy / V_HEIGHT) * r.height };
-}
-
-/* =============================================================
-   JOYSTICK
-   ============================================================= */
-const joystick = { active:false, id:null, dx:0, dy:0 };
-const joyBase = document.getElementById('joystick-base');
-const joyKnob = document.getElementById('joystick-knob');
-const JOY_RADIUS = 42;
-
-function joyUpdate(clientX, clientY) {
-  const r = joyBase.getBoundingClientRect();
-  let dx = clientX - (r.left + r.width / 2);
-  let dy = clientY - (r.top + r.height / 2);
-  const d = Math.hypot(dx, dy);
-  if (d > JOY_RADIUS) { dx = (dx / d) * JOY_RADIUS; dy = (dy / d) * JOY_RADIUS; }
-  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-  const nd = Math.hypot(dx, dy);
-  if (nd < 6) { joystick.dx = 0; joystick.dy = 0; }
-  else { joystick.dx = dx / JOY_RADIUS; joystick.dy = dy / JOY_RADIUS; }
-}
-function joyReset() {
-  joystick.active = false; joystick.id = null; joystick.dx = 0; joystick.dy = 0;
-  joyKnob.style.transform = 'translate(0px,0px)';
-}
-joyBase.addEventListener('pointerdown', e => {
-  e.preventDefault(); initAudio();
-  joystick.active = true; joystick.id = e.pointerId;
-  player.autoTarget = null;
-  try { joyBase.setPointerCapture(e.pointerId); } catch (err) {}
-  joyUpdate(e.clientX, e.clientY);
-});
-joyBase.addEventListener('pointermove', e => {
-  if (!joystick.active || e.pointerId !== joystick.id) return;
-  e.preventDefault();
-  joyUpdate(e.clientX, e.clientY);
-});
-['pointerup','pointercancel','lostpointercapture'].forEach(ev =>
-  joyBase.addEventListener(ev, e => { if (e.pointerId === joystick.id) joyReset(); })
-);
-joyBase.addEventListener('touchstart', e => e.preventDefault(), { passive:false });
-
-/* =============================================================
-   CANVAS TAP -> AUTO WALK / STATION
-   ============================================================= */
-function handleCanvasTap(clientX, clientY) {
-  initAudio();
-  const v = screenToVirtual(clientX, clientY);
-  // station tap?
-  let target = null, best = 1e9;
-  for (const key in STATIONS) {
-    const st = STATIONS[key];
-    const d = distToRect(v.x, v.y, st.rect);
-    if (d < 26 && d < best) { best = d; target = st; }
-  }
-  if (target) {
-    let tx = target.rect.x + target.rect.w / 2;
-    let ty = target.rect.y + target.rect.h + PLAYER_R + 8;
-    if (target.type === 'counter') ty = target.rect.y + target.rect.h + PLAYER_R + 10;
-    if (target.type === 'fridge') { tx = target.rect.x + target.rect.w + PLAYER_R + 8; ty = target.rect.y + target.rect.h / 2; }
-    if (target.type === 'shelf')  { tx = target.rect.x - PLAYER_R - 8; ty = target.rect.y + target.rect.h / 2; }
-    if (target.type === 'storage'){ tx = target.rect.x + target.rect.w + PLAYER_R + 10; ty = target.rect.y + 26; }
-    if (target.type === 'cooler') { tx = target.rect.x - PLAYER_R - 10; ty = target.rect.y + target.rect.h / 2; }
-    player.autoTarget = {
-      x: Math.max(BOUNDS.x1, Math.min(BOUNDS.x2, tx)),
-      y: Math.max(BOUNDS.y1, Math.min(BOUNDS.y2, ty))
-    };
-  } else {
-    player.autoTarget = {
-      x: Math.max(BOUNDS.x1, Math.min(BOUNDS.x2, v.x)),
-      y: Math.max(BOUNDS.y1, Math.min(BOUNDS.y2, v.y))
-    };
-  }
-}
-canvas.addEventListener('mousedown', e => { e.preventDefault(); handleCanvasTap(e.clientX, e.clientY); });
-canvas.addEventListener('touchstart', e => {
-  if (e.touches.length > 0) { e.preventDefault(); handleCanvasTap(e.touches[0].clientX, e.touches[0].clientY); }
-}, { passive:false });
-canvas.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
-
-/* =============================================================
-   INTERACTION SYSTEM
-   ============================================================= */
-function getNearbyInteractable() {
-  if (!state.dayRunning) return null;
-  let best = null, bestD = 1e9;
-  for (const key in STATIONS) {
-    const st = STATIONS[key];
-    const d = distToRect(player.x, player.y, st.rect);
-    if (d < 50 && d < bestD) {
-      // must be OUTSIDE the solid (not overlapping)
-      bestD = d;
-      best = st;
-    }
-  }
-  return best;
-}
-
-function makeBtn(label, cls, onClick, sub) {
-  const b = document.createElement('button');
-  b.className = 'interact-btn ' + (cls || 'bg-amber-500 text-stone-950');
-  b.innerHTML = '<span>' + label + '</span>' + (sub ? '<span class="cnt">' + sub + '</span>' : '');
-  b.onclick = (e) => { e.stopPropagation(); initAudio(); onClick(); };
-  b.ontouchstart = (e) => { e.stopPropagation(); };
-  return b;
-}
-
-function updateInteractPanel() {
-  const panel = document.getElementById('interact-panel');
-  const target = getNearbyInteractable();
-
-  if (!target) {
-    if (!panel.classList.contains('hidden')) panel.classList.add('hidden');
-    player.interactOpen = false;
-    lastInteractKey = '__none__';
-    return;
-  }
-
-  const stockKey = Object.keys(PRODUCTS).map(k => state.inventory[k] || 0).join(',');
-  const key = target.type + '|' + player.interactOpen + '|' + player.carrying.join(',') + '|' + stockKey + '|' + state.stage;
-  if (key === lastInteractKey) return;
-  lastInteractKey = key;
-
-  panel.classList.remove('hidden');
-  panel.innerHTML = '';
-
-  if (target.type === 'counter') {
-    panel.appendChild(makeBtn('🛎️ بيع / سلّم الطلب', 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-950', () => doServe()));
-  } else if (target.type === 'storage') {
-    panel.appendChild(makeBtn('📦 افتح المخزن', 'bg-gradient-to-b from-yellow-500 to-amber-700 text-white', () => openModal('inventory-modal')));
-  } else {
-    if (!player.interactOpen) {
-      const labels = { fridge:'🧊 افتح الثلاجة', shelf:'🥨 خذ المنتج', cooler:'🍦 افتح الفريزر' };
-      const colors = { fridge:'bg-gradient-to-b from-sky-500 to-sky-800 text-white',
-                       shelf:'bg-gradient-to-b from-amber-500 to-amber-800 text-white',
-                       cooler:'bg-gradient-to-b from-rose-500 to-rose-800 text-white' };
-      panel.appendChild(makeBtn(labels[target.type], colors[target.type], () => {
-        player.interactOpen = true; lastInteractKey = '__force__'; updateInteractPanel();
-      }));
-    } else {
-      const prods = Object.values(PRODUCTS).filter(p => p.station === target.type && p.unlockStage <= state.stage);
-      prods.forEach(p => {
-        const stock = state.inventory[p.id] || 0;
-        const cls = stock <= 0 ? 'bg-stone-700 text-stone-400' : 'bg-gradient-to-b from-emerald-500 to-emerald-700 text-white';
-        panel.appendChild(makeBtn(p.emoji + ' ' + p.short, cls, () => takeProduct(p.id), String(stock)));
-      });
-      panel.appendChild(makeBtn('✖ إغلاق', 'bg-stone-800 text-stone-300', () => {
-        player.interactOpen = false; lastInteractKey = '__force__'; updateInteractPanel();
-      }));
-    }
-  }
-}
-
-/* ---- TAKE PRODUCT ---- */
-function takeProduct(id) {
-  const prod = PRODUCTS[id];
-  if (!prod) return;
-  if (player.carrying.length >= maxCarry()) {
-    floatToast(player.x, player.y - 40, '✋ يداك مليانتين!');
-    playSound('error'); vibrate(25);
-    return;
-  }
-  if ((state.inventory[id] || 0) <= 0) {
-    floatToast(player.x, player.y - 40, '⚠️ ' + prod.short + ' خلصت!');
-    playSound('error'); vibrate([20,40,20]);
-    return;
-  }
-  state.inventory[id]--;
-  player.carrying.push(id);
-  playSound('pickup'); vibrate(12);
-  createParticle(player.x + (Math.random()*20-10), player.y - 26, prod.emoji);
-  updateCarryHUD();
-  updateHUD();
-  saveGame();
-  checkStockAlerts(id);
-  lastInteractKey = '__force__';
-  updateInteractPanel();
-}
-
-/* ---- SERVE ---- */
-function doServe() {
-  if (player.carrying.length === 0) {
-    floatToast(player.x, player.y - 40, 'مش حامل حاجة! 🚫');
-    playSound('error'); vibrate(20);
-    return;
-  }
-  const candidates = customers.filter(c => c.atCounter && c.state === 'ordering' && c.order.some(o => !o.done));
-  if (candidates.length === 0) {
-    floatToast(player.x, player.y - 40, 'مفيش زبون عند الكاونتر');
-    playSound('error');
-    return;
-  }
-  let best = null, bestScore = 0, bestPatience = Infinity;
-  for (const c of candidates) {
-    const rem = c.order.filter(o => !o.done).map(o => o.item);
-    const pool = [...player.carrying];
-    let m = 0;
-    for (const need of rem) {
-      const i = pool.indexOf(need);
-      if (i !== -1) { m++; pool.splice(i, 1); }
-    }
-    if (m > 0 && (m > bestScore || (m === bestScore && c.patienceTimer < bestPatience))) {
-      best = c; bestScore = m; bestPatience = c.patienceTimer;
-    }
-  }
-  if (!best) {
-    floatToast(player.x, player.y - 40, 'الزبون مش طالب اللي معاك');
-    playSound('error'); vibrate(25);
-    return;
-  }
-
-  // Deliver
-  const remaining = [];
-  let earned = 0, deliveredCount = 0;
-  for (const it of player.carrying) {
-    const slot = best.order.find(o => !o.done && o.item === it);
-    if (slot) {
-      slot.done = true;
-      deliveredCount++;
-      const base = Math.round(PRODUCTS[it].sell * STAGES[state.stage].mult * best.payMul);
-      earned += base;
-    } else {
-      remaining.push(it);
-    }
-  }
-  player.carrying = remaining;
-  updateCarryHUD();
-
-  // Money & stats
-  state.money += earned;
-  state.dayStats.revenue += earned;
-  state.totalStats.earned += earned;
-  state.totalStats.sales += deliveredCount;
-  if (deliveredCount > 0) {
-    const costBasis = PRODUCTS[best.order.find(o => o.item)?.item]?.buy || 0;
-  }
-  // costs are accounted at purchase time in this build (see buyStock) — keep day cost via purchased sum:
-  playSound('cash'); vibrate(35);
-  showCoinEffect(best.x, best.y - 20, '+' + earned + ' ج.م');
-  createParticle(best.x, best.y - 10, '✨');
-  createParticle(best.x + 12, best.y - 18, '💰');
-
-  trackQuest('sell', deliveredCount);
-  trackQuest('money', earned);
-  trackAchievement('a1', 1);
-  trackAchievement('a2', state.money);
-
-  updateHUD();
-
-  // Complete order?
-  if (best.order.every(o => o.done)) {
-    // Tip
-    let tip = 0;
-    if (Math.random() < best.tipProb + state.upgrades.counterSpace * 0.04) {
-      tip = 2 + Math.floor(Math.random() * (4 + best.payMul * 3));
-      state.money += tip;
-      state.dayStats.revenue += tip;
-      floatToast(best.x, best.y - 55, '💵 بقشيش +' + tip);
-      playSound('coin');
-    }
-    best.state = 'paying';
-    best.stateTimer = 0.7;
-    best.happy = true;
-    state.dayStats.served++;
-    state.totalStats.served++;
-    trackQuest('serve', 1);
-    trackAchievement('a3', state.totalStats.served);
-    trackAchievement('a5', state.totalStats.served);
-    state.reputation = Math.min(5.0, +(state.reputation + 0.02).toFixed(2));
-    createParticle(best.x, best.y - 34, '😊');
-  } else {
-    floatToast(best.x, best.y - 52, 'الطلب لسه ناقص...');
-  }
-
-  // stock alerts
-  for (const it of Object.keys(PRODUCTS)) checkStockAlerts(it);
-
-  saveGame();
-  lastInteractKey = '__force__';
-  updateInteractPanel();
-}
-
-/* =============================================================
-   STOCK
-   ============================================================= */
-function maxStockOf(id) { return PRODUCTS[id].maxStock + (state.upgrades.fridgeCap - 1) * 10; }
-
-function buyStock(id, qty) {
-  qty = qty || 1;
-  const prod = PRODUCTS[id];
-  if (!prod) return;
-  const max = maxStockOf(id);
-  let bought = 0;
-  for (let i = 0; i < qty; i++) {
-    if (state.inventory[id] >= max) break;
-    if (state.money < prod.buy) break;
-    state.money -= prod.buy;
-    state.dayStats.cost += prod.buy;
-    state.inventory[id]++;
-    bought++;
-  }
-  if (bought > 0) {
-    playSound('pickup'); vibrate(10);
-    updateHUD(); renderInventoryModal(); saveGame();
-  } else {
-    playSound('error');
-  }
-}
-
-function buyAllStock() {
-  let boughtAny = false;
-  for (const id in PRODUCTS) {
-    const prod = PRODUCTS[id];
-    if (prod.unlockStage > state.stage) continue;
-    const max = maxStockOf(id);
-    let guard = 0;
-    while (state.inventory[id] < max && state.money >= prod.buy && guard++ < 500) {
-      state.money -= prod.buy;
-      state.dayStats.cost += prod.buy;
-      state.inventory[id]++;
-      boughtAny = true;
-    }
-  }
-  if (boughtAny) {
-    playSound('cash'); vibrate(25);
-    updateHUD(); renderInventoryModal(); saveGame();
-  } else { playSound('error'); }
-}
-
-function restockRequested() {
-  const needed = {};
-  customers.forEach(c => c.order.forEach(o => { if (!o.done) needed[o.item] = (needed[o.item] || 0) + 1; }));
-  const ids = Object.keys(needed);
-  if (ids.length === 0) { playSound('error'); return; }
-  let boughtAny = false;
-  ids.forEach(id => {
-    const prod = PRODUCTS[id]; if (!prod) return;
-    const max = maxStockOf(id);
-    const want = Math.min(needed[id] + 2, max - state.inventory[id]);
-    for (let i = 0; i < want; i++) {
-      if (state.money < prod.buy) break;
-      state.money -= prod.buy; state.dayStats.cost += prod.buy;
-      state.inventory[id]++; boughtAny = true;
-    }
-  });
-  if (boughtAny) { playSound('cash'); vibrate(20); updateHUD(); renderInventoryModal(); saveGame(); }
-  else playSound('error');
-}
-
-function checkStockAlerts(id) {
-  if ((state.inventory[id] || 0) === 0 && !emptyAlerted[id]) {
-    emptyAlerted[id] = true;
-    floatToast(player.x, player.y - 50, '❗ ' + PRODUCTS[id].short + ' خلصت!');
-    playSound('grumble');
-  } else if ((state.inventory[id] || 0) > 0) {
-    emptyAlerted[id] = false;
-  }
-}
-const emptyAlerted = {};
-
-/* =============================================================
-   UPGRADES
-   ============================================================= */
-function buyUpgrade(key) {
-  const up = UPGRADE_TYPES[key];
-  const lvl = state.upgrades[key];
-  if (!up || lvl >= up.maxLevel) return;
-  const cost = up.baseCost * lvl;
-  if (state.money < cost) { playSound('error'); vibrate(25); return; }
-  state.money -= cost;
-  state.upgrades[key]++;
-  state.totalStats.upgradesBought++;
-  playSound('upgrade'); vibrate([20, 40, 20]);
-  trackQuest('upgrade', 1);
-  updateHUD(); renderUpgradesModal(); saveGame();
-  createParticle(player.x, player.y - 40, '⭐');
-}
-
-function unlockStage(stageId) {
-  const stg = STAGES[stageId];
-  if (!stg || state.stage >= stageId) return;
-  if (state.stage !== stageId - 1) { playSound('error'); return; }
-  if (state.totalStats.served < stg.reqServed) { playSound('error'); return; }
-  if (state.money < stg.cost) { playSound('error'); vibrate(25); return; }
-  state.money -= stg.cost;
-  state.stage = stageId;
-  playSound('upgrade'); vibrate([30, 60, 30, 60, 30]);
-  trackAchievement('a4', 1);
-  if (stageId === 4) trackAchievement('a6', 1);
-  updateHUD(); renderStagesModal(); saveGame();
-  floatToast(200, 250, '🎉 مبروك فتحت: ' + stg.name);
-}
-
-/* =============================================================
-   QUESTS & ACHIEVEMENTS
-   ============================================================= */
-function trackQuest(type, amount) {
-  let alert = false;
-  state.quests.forEach(q => {
-    if (q.type === type && !q.done) {
-      q.current += amount;
-      if (q.current >= q.target) { q.done = true; alert = true; }
-    }
-  });
-  const badge = document.getElementById('quest-alert-badge');
-  if (alert && badge) badge.classList.remove('hidden');
-}
-function trackAchievement(id, val) {
-  const a = state.achievements.find(x => x.id === id);
-  if (a && !a.done) {
-    if (typeof val === 'number') a.current = Math.max(a.current, val);
-    if (a.current >= a.target) { a.done = true; playSound('bell'); floatToast(player.x, player.y - 60, '🏆 إنجاز: ' + a.title); }
-  }
-}
-function claimQuest(id) {
-  const q = state.quests.find(x => x.id === id);
-  if (q && q.done && !q.claimed) {
-    q.claimed = true; state.money += q.reward;
-    playSound('cash'); vibrate(30);
-    updateHUD(); renderQuestsModal(); saveGame();
-  }
-}
-function claimAchievement(id) {
-  const a = state.achievements.find(x => x.id === id);
-  if (a && a.done && !a.claimed) {
-    a.claimed = true; state.money += a.reward;
-    playSound('cash'); vibrate(30);
-    updateHUD(); renderAchievementsModal(); saveGame();
-  }
-}
-
-/* =============================================================
-   GAME LOOP
-   ============================================================= */
-function gameLoop(now) {
-  const dt = Math.min((now - lastTime) / 1000, 0.05);
-  lastTime = now;
-  if (state.dayRunning) updateGame(dt);
-  renderGame();
-  updateInteractPanel();
-  requestAnimationFrame(gameLoop);
-}
-
-function updateGame(dt) {
-  /* ---- Day timer ---- */
-  state.dayTimer -= dt;
-  const bar = document.getElementById('day-progress-bar');
-  if (bar) bar.style.width = Math.max(0, (state.dayTimer / state.dayDuration) * 100) + '%';
-  if (state.dayTimer <= 0) { state.dayTimer = 0; endDay(); return; }
-
-  /* ---- Player movement ---- */
-  const baseSpeed = 155 + (state.upgrades.speed - 1) * 24;
-  let mvx = 0, mvy = 0;
-
-  if (joystick.dx !== 0 || joystick.dy !== 0) {
-    mvx = joystick.dx * baseSpeed * dt;
-    mvy = joystick.dy * baseSpeed * dt;
-    player.autoTarget = null;
-    if (Math.abs(joystick.dx) > Math.abs(joystick.dy)) player.facing = joystick.dx > 0 ? 'right' : 'left';
-    else player.facing = joystick.dy > 0 ? 'down' : 'up';
-  } else if (player.autoTarget) {
-    const dx = player.autoTarget.x - player.x;
-    const dy = player.autoTarget.y - player.y;
-    const d = Math.hypot(dx, dy);
-    if (d < 3) { player.autoTarget = null; }
-    else {
-      const sp = Math.min(baseSpeed * dt, d);
-      mvx = (dx / d) * sp; mvy = (dy / d) * sp;
-    }
-  }
-
-  if (mvx !== 0 || mvy !== 0) {
-    if (canStand(player.x + mvx, player.y)) player.x += mvx;
-    else if (player.autoTarget) { player.autoTarget = null; }
-    if (canStand(player.x, player.y + mvy)) player.y += mvy;
-    else if (player.autoTarget) { player.autoTarget = null; }
-    player.moving = true;
-    player.walkT += dt * 9;
-    player.bob = Math.sin(player.walkT) * 2.2;
-  } else {
-    player.moving = false;
-    player.bob *= 0.85;
-  }
-
-  /* ---- Customer spawning ---- */
-  const stg = STAGES[state.stage];
-  const maxCust = stg.maxCustomers;
-  const attractionBonus = (state.upgrades.attraction - 1) * 0.55;
-  const rushBonus = (currentEvent === 'rush') ? 2.2 : 0;
-  const vipDay = (currentEvent === 'vip') ? 0.35 : 0;
-  let spawnInterval = Math.max(2.4, 6.6 - attractionBonus - rushBonus);
-
-  spawnCooldown -= dt;
-  if (customers.length < maxCust && spawnCooldown <= 0) {
-    if (Math.random() < 0.65 + vipDay) { spawnCustomer(); }
-    spawnCooldown = spawnInterval * (0.75 + Math.random() * 0.6);
-  }
-
-  /* ---- Customers update ---- */
-  for (let i = customers.length - 1; i >= 0; i--) {
-    const c = customers[i];
-    const slotX = customerSlotX(c.slot);
-    const st = c.state;
-
-    if (st === 'entering') {
-      const ty = 82;
-      const dx = slotX - c.x, dy = ty - c.y;
-      const d = Math.hypot(dx, dy);
-      if (d < 3) { c.x = slotX; c.y = ty; c.state = 'ordering'; c.atCounter = true; }
-      else {
-        const sp = c.walkSpeed * dt;
-        c.x += (dx / d) * Math.min(sp, d);
-        c.y += (dy / d) * Math.min(sp, d);
-        c.walkT = (c.walkT || 0) + dt * 8;
-      }
-    } else if (st === 'ordering') {
-      // idle shuffle
-      c.x += (slotX - c.x) * Math.min(1, dt * 4);
-      c.walkT = (c.walkT || 0) + dt * 4;
-      c.patienceTimer -= dt;
-      if (c.patienceTimer <= 0) {
-        c.patienceTimer = 0;
-        c.state = 'angry';
-        c.stateTimer = 0;
-        playSound('grumble'); vibrate([30, 50, 30]);
-        floatToast(c.x, c.y - 45, '😡 خلاص، همشي!');
-        state.dayStats.lost++;
-        state.dayStats.perfect = false;
-        state.reputation = Math.max(3.0, +(state.reputation - 0.08).toFixed(2));
-        updateHUD();
-        continue;
-      }
-    } else if (st === 'paying') {
-      c.stateTimer -= dt;
-      if (c.stateTimer <= 0) { c.state = 'leaving'; }
-    } else if (st === 'leaving' || st === 'angry') {
-      c.y -= c.walkSpeed * dt * 1.3;
-      c.walkT = (c.walkT || 0) + dt * 10;
-      if (c.y < -80) {
-        customers.splice(i, 1);
-        reassignSlots();
-        continue;
-      }
-    }
-  }
-
-  /* ---- Particles ---- */
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vy += 90 * dt;
-    p.life -= dt;
-    if (p.life <= 0) particles.splice(i, 1);
-  }
-
-  /* ---- Random events ---- */
-  eventTimer -= dt;
-  if (eventTimer <= 0) { triggerRandomEvent(); }
-}
-
-function customerSlotX(slot) {
-  const stg = STAGES[state.stage];
-  const n = stg.maxCustomers;
-  const spread = Math.min(58, 300 / Math.max(1, n));
-  const offset = (slot - (n - 1) / 2) * spread;
-  return Math.max(45, Math.min(355, 200 + offset));
-}
-
-function reassignSlots() {
-  customers.forEach((c, i) => { c.slot = i; });
-}
-
-/* =============================================================
-   CUSTOMER SPAWN
-   ============================================================= */
-function spawnCustomer() {
-  const available = Object.keys(PRODUCTS).filter(k => PRODUCTS[k].unlockStage <= state.stage);
-  if (available.length === 0) return;
-
-  const isVip = currentEvent === 'vip' && Math.random() < 0.45;
-  const pool = isVip ? CUSTOMER_TYPES.filter(t => t.id === 'vip') : CUSTOMER_TYPES;
-  const type = pool[Math.floor(Math.random() * pool.length)];
-
-  const validItems = type.items.filter(it => PRODUCTS[it].unlockStage <= state.stage);
-  const orderItems = validItems.length ? validItems : available;
-
-  // 1-3 items in the order, weighted
-  const count = Math.random() < 0.35 ? 1 : (Math.random() < 0.72 ? 2 : 3);
-  const order = [];
-  for (let i = 0; i < count; i++) {
-    order.push({ item: orderItems[Math.floor(Math.random() * orderItems.length)], done: false });
-  }
-
-  const patienceBoost = (state.upgrades.attraction - 1) * 3 + (state.upgrades.speed - 1) * 1.5;
-  const maxP = type.patience + patienceBoost + order.length * 3;
-  const slot = customers.length;
-
-  customers.push({
-    id: type.id, name: type.name, avatar: type.avatar,
-    walkSpeed: type.walkSpeed, tipProb: type.tipProb, payMul: type.payMul,
-    order: order,
-    patienceTimer: maxP,
-    maxPatience: maxP,
-    x: customerSlotX(slot), y: -60,
-    walkT: 0,
-    slot: slot,
-    state: 'entering',
-    atCounter: false,
-    stateTimer: 0,
-    happy: false
-  });
-  playSound('bell');
-}
-
-/* =============================================================
-   RANDOM EVENTS
-   ============================================================= */
-function triggerRandomEvent() {
-  const events = [
-    { id:'rush',     text:'⚡ زحمة مفاجئة! توافد زبائن كثيرين', dur: 12 },
-    { id:'vip',      text:'👑 زبون VIP وصل الكشك! طلب غالي وبقشيش كبير', dur: 14 },
-    { id:'popular',  text:'🔥 طلب متزايد على المشروبات والشيبسي!', dur: 13 },
-    { id:'discount', text:'🏷️ خصم المورد على البضاعة!', dur: 15 },
-    { id:'strong',   text:'💪 يوم المبيعات القوي: أرباح مضاعفة!', dur: 12 }
-  ];
-  const ev = events[Math.floor(Math.random() * events.length)];
-  currentEvent = ev.id;
-
-  if (ev.id === 'rush') { spawnCooldown = 0; }
-  if (ev.id === 'vip') { spawnCustomer(); }
-
-  const toast = document.getElementById('event-toast');
-  const txt = document.getElementById('event-toast-text');
-  if (toast && txt) {
-    txt.innerText = ev.text;
-    toast.classList.remove('hidden');
-    toast.classList.remove('event-shake'); void toast.offsetWidth; toast.classList.add('event-shake');
-    playSound('event'); vibrate([15, 30, 15]);
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => { toast.classList.add('hidden'); currentEvent = null; }, ev.dur * 1000);
-  }
-  eventTimer = 26 + Math.random() * 22;
-}
-
-/* =============================================================
-   RENDERING
-   ============================================================= */
-function renderGame() {
-  const scaleX = canvas.width / V_WIDTH;
-  const scaleY = canvas.height / V_HEIGHT;
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.scale(scaleX, scaleY);
-
-  /* ---- floor ---- */
-  ctx.fillStyle = '#2d2522';
-  ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
-
-  // sidewalk (outside)
-  const g = ctx.createLinearGradient(0, 0, 0, 150);
-  g.addColorStop(0, '#4a423e');
-  g.addColorStop(1, '#3a3330');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, V_WIDTH, 150);
-  ctx.strokeStyle = '#5f5550'; ctx.lineWidth = 2;
-  for (let i = 0; i < 8; i++) {
-    ctx.beginPath(); ctx.moveTo(i * 50, 0); ctx.lineTo(i * 50, 150); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, i * 30); ctx.lineTo(V_WIDTH, i * 30); ctx.stroke();
-  }
-  ctx.strokeStyle = '#6b6058'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(0, 148); ctx.lineTo(V_WIDTH, 148); ctx.stroke();
-
-  // kiosk interior floor
-  ctx.fillStyle = '#1c1614';
-  ctx.fillRect(20, 148, 360, 392);
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 7; col++) {
-      if ((row + col) % 2 === 0) {
-        ctx.fillStyle = '#261e1b';
-        ctx.fillRect(23 + col * 51, 152 + row * 43.5, 51, 43.5);
-      }
-    }
-  }
-  // interior border
-  ctx.strokeStyle = 'rgba(251,191,36,0.10)'; ctx.lineWidth = 2;
-  ctx.strokeRect(21, 149, 358, 390);
-
-  /* ---- Counter ---- */
-  const cr = STATIONS.counter.rect;
-  ctx.fillStyle = '#5b3a10';
-  ctx.fillRect(cr.x, cr.y + 8, cr.w, cr.h - 4);
-  ctx.fillStyle = '#854d0e';
-  ctx.fillRect(cr.x, cr.y, cr.w, cr.h - 6);
-  ctx.fillStyle = '#a16207';
-  ctx.fillRect(cr.x + 4, cr.y + 3, cr.w - 8, 12);
-  // counter top highlight
-  ctx.fillStyle = 'rgba(253,224,71,0.25)';
-  ctx.fillRect(cr.x + 4, cr.y + 3, cr.w - 8, 3);
-  ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('🛎️', 200, cr.y + 28);
-  ctx.font = 'bold 10px Cairo, sans-serif';
-  ctx.fillStyle = '#fde68a';
-  ctx.fillText('كاونتر التسليم', 200, cr.y - 5);
-
-  /* ---- Fridge ---- */
-  drawStationBox(STATIONS.fridge, '#0c4a6e', '#38bdf8', '🧊', 'المشروبات');
-  /* ---- Shelf ---- */
-  drawStationBox(STATIONS.shelf, '#78350f', '#fbbf24', '🥨', 'شيبسي ومقرمشات');
-  /* ---- Storage ---- */
-  drawStationBox(STATIONS.storage, '#3f2b13', '#d97706', '📦', 'المخزن', true);
-  /* ---- Cooler ---- */
-  drawStationBox(STATIONS.cooler, '#881337', '#fbcfe8', '🍦', 'فريزر آيس', true);
-
-  /* ---- Customers ---- */
-  customers.forEach(c => drawCustomer(c));
-
-  /* ---- Player ---- */
-  drawPlayer();
-
-  /* ---- Particles ---- */
-  particles.forEach(p => {
-    ctx.globalAlpha = Math.max(0, Math.min(1, p.life / p.maxLife));
-    ctx.font = p.size + 'px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(p.text, p.x, p.y);
-    ctx.globalAlpha = 1;
-  });
-
-  ctx.restore();
-}
-
-function drawStationBox(st, dark, light, emoji, label, isBottom) {
-  const r = st.rect;
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillRect(r.x + 3, r.y + 5, r.w, r.h);
-  // body
-  ctx.fillStyle = dark;
-  ctx.fillRect(r.x, r.y, r.w, r.h);
-  // glass/face
-  ctx.fillStyle = light;
-  ctx.globalAlpha = 0.32;
-  ctx.fillRect(r.x + 5, r.y + 5, r.w - 10, r.h - 10);
-  ctx.globalAlpha = 1;
-  // border
-  ctx.strokeStyle = light; ctx.lineWidth = 2;
-  ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
-  // emoji
-  ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText(emoji, r.x + r.w / 2, r.y + r.h / 2 + (isBottom ? 4 : 0));
-  // label
-  ctx.font = 'bold 9px Cairo, sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(label, r.x + r.w / 2, r.y + r.h - 6);
-}
-
-function drawCustomer(c) {
-  const bob = Math.sin((c.walkT || 0)) * 2;
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.28)';
-  ctx.beginPath();
-  ctx.ellipse(c.x, c.y + 26, 15, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // avatar
-  ctx.font = '34px sans-serif'; ctx.textAlign = 'center';
-  ctx.globalAlpha = c.state === 'leaving' || c.state === 'angry' ? 0.85 : 1;
-  ctx.fillText(c.avatar, c.x, c.y + 8 + bob);
-  ctx.globalAlpha = 1;
-
-  const rem = c.order.filter(o => !o.done);
-  const showBubble = c.atCounter && rem.length > 0 && c.state !== 'leaving' && c.state !== 'angry';
-  if (showBubble) {
-    const bw = Math.max(50, rem.length * 26 + 20);
-    const bh = 36;
-    const bx = c.x - bw / 2;
-    const by = c.y - 64;
-    // bubble
-    ctx.fillStyle = '#fffbeb';
-    ctx.strokeStyle = '#b45309';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.fill(); ctx.stroke();
-    // tail
-    ctx.beginPath();
-    ctx.moveTo(c.x - 7, by + bh - 1);
-    ctx.lineTo(c.x + 7, by + bh - 1);
-    ctx.lineTo(c.x, by + bh + 9);
-    ctx.closePath();
-    ctx.fillStyle = '#fffbeb'; ctx.fill();
-    ctx.strokeStyle = '#b45309'; ctx.stroke();
-    // items
-    ctx.font = '18px sans-serif';
-    rem.forEach((o, i) => {
-      ctx.fillText(PRODUCTS[o.item].emoji, bx + 22 + i * 26, by + 25);
-    });
-
-    // patience bar
-    const ratio = Math.max(0, c.patienceTimer / c.maxPatience);
-    const pw = 54;
-    const py = c.y + 26;
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    ctx.beginPath(); ctx.roundRect(c.x - pw / 2, py, pw, 8, 4); ctx.fill();
-    let col = '#22c55e';
-    if (ratio <= 0.25) col = '#ef4444';
-    else if (ratio <= 0.5) col = '#eab308';
-    ctx.fillStyle = col;
-    ctx.beginPath(); ctx.roundRect(c.x - pw / 2 + 1, py + 1, Math.max(0, (pw - 2) * ratio), 6, 3); ctx.fill();
-
-    // state text
-    let txt = '';
-    if (ratio <= 0.12) txt = 'خلاص، همشي!';
-    else if (ratio <= 0.35) txt = 'مستعجل!';
-    if (txt) {
-      ctx.font = 'bold 9px Cairo, sans-serif';
-      ctx.fillStyle = ratio <= 0.12 ? '#f87171' : '#fbbf24';
-      ctx.fillText(txt, c.x, py + 20);
-    }
-  }
-}
-
-function drawPlayer() {
-  const x = player.x, y = player.y + player.bob;
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.beginPath();
-  ctx.ellipse(player.x, player.y + 17, 15, 6.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // body (shopkeeper)
-  ctx.save();
-  ctx.translate(x, y);
-  // apron
-  ctx.fillStyle = '#0f766e';
-  ctx.beginPath(); ctx.roundRect(-11, 2, 22, 18, 6); ctx.fill();
-  // shirt
-  ctx.fillStyle = '#e2e8f0';
-  ctx.beginPath(); ctx.roundRect(-12, -4, 24, 14, 7); ctx.fill();
-  // head
-  ctx.font = '32px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('👨‍🦱', 0, 4);
-  ctx.restore();
-
-  // facing indicator ring (subtle)
-  ctx.strokeStyle = 'rgba(251,191,36,0.45)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(x, y + 15, 17, 8, 0, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // carrying items above head
-  if (player.carrying.length > 0) {
-    const n = player.carrying.length;
-    const w = n * 24 + 8;
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.roundRect(x - w / 2, y - 56, w, 26, 7); ctx.fill(); ctx.stroke();
-    ctx.font = '16px sans-serif';
-    player.carrying.forEach((it, i) => {
-      ctx.fillText(PRODUCTS[it].emoji, x - w / 2 + 16 + i * 24, y - 37);
-    });
-  }
-}
-
-/* =============================================================
-   EFFECTS
-   ============================================================= */
-function createParticle(x, y, text) {
-  particles.push({
-    x, y, text,
-    vx: (Math.random() * 40 - 20),
-    vy: -55 - Math.random() * 30,
-    life: 0.85, maxLife: 0.85, size: 18
-  });
-}
-function showCoinEffect(vx, vy, text) {
-  const s = virtualToScreen(vx, vy);
-  const el = document.createElement('div');
-  el.className = 'coin-effect font-brand';
-  el.innerText = text;
-  el.style.left = s.x + 'px';
-  el.style.top = s.y + 'px';
-  document.getElementById('game-view').appendChild(el);
-  setTimeout(() => el.remove(), 1300);
-}
-function floatToast(vx, vy, text) {
-  const s = virtualToScreen(vx, vy);
-  const el = document.createElement('div');
-  el.className = 'toast-float text-white';
-  el.innerText = text;
-  el.style.left = s.x + 'px';
-  el.style.top = s.y + 'px';
-  document.getElementById('game-view').appendChild(el);
-  setTimeout(() => el.remove(), 1550);
-}
-
-/* =============================================================
-   HUD
-   ============================================================= */
-function updateHUD() {
-  document.getElementById('player-money').innerText = Math.max(0, Math.round(state.money)).toLocaleString('en-US');
-  document.getElementById('day-counter').innerText = state.day;
-  document.getElementById('stage-name-badge').innerText = STAGES[state.stage].name;
-  document.getElementById('rep-rating').innerText = state.reputation.toFixed(1);
-  const lvl = state.stage + 1;
-  document.getElementById('kiosk-level').innerText = '★'.repeat(Math.min(lvl, 5));
-}
-function bumpMoney() {
-  const el = document.getElementById('player-money');
-  el.classList.remove('money-pop'); void el.offsetWidth; el.classList.add('money-pop');
-}
-const _origUpdateHUD = updateHUD;
-updateHUD = function () { _origUpdateHUD(); };
-
-function updateCarryHUD() {
-  for (let i = 0; i < 3; i++) {
-    const slot = document.getElementById('slot-' + i);
-    if (!slot) continue;
-    const limit = Math.min(maxCarry(), 3);
-    if (i < limit && player.carrying[i]) {
-      slot.className = 'carry-slot filled';
-      slot.innerText = PRODUCTS[player.carrying[i]].emoji;
-    } else {
-      slot.className = 'carry-slot';
-      slot.innerText = i < limit ? '' : '🔒';
-    }
-  }
-}
-
-/* =============================================================
-   MODAL RENDERING
-   ============================================================= */
-function renderInventoryModal() {
-  const list = document.getElementById('inventory-list');
-  if (!list) return;
-  list.innerHTML = '';
-  for (const id in PRODUCTS) {
-    const p = PRODUCTS[id];
-    const unlocked = p.unlockStage <= state.stage;
-    const max = maxStockOf(id);
-    const cur = state.inventory[id] || 0;
-    const low = cur <= 3, empty = cur <= 0;
-    const div = document.createElement('div');
-    div.className = 'p-3 rounded-xl border flex items-center justify-between ' +
-      (unlocked ? (empty ? 'bg-red-950/40 border-red-800' : 'bg-stone-900 border-stone-800') : 'bg-stone-900/40 border-stone-800/40 opacity-60');
-    div.innerHTML = `
-      <div class="flex items-center gap-3">
-        <span class="text-3xl">${p.emoji}</span>
-        <div>
-          <div class="font-bold text-white text-sm">${p.name} ${!unlocked ? '<span class="text-xs text-amber-500">(مغلق)</span>' : ''}</div>
-          <div class="text-xs text-stone-400">بيع: <span class="text-emerald-400 font-bold">${p.sell} ج.م</span> • شراء: ${p.buy} ج.م</div>
-          <div class="text-[10px] font-bold ${empty ? 'text-red-400' : low ? 'text-amber-400' : 'text-stone-500'}">
-            ${empty ? '❗ نفدت الكمية!' : low ? '⚠️ مخزون منخفض' : 'المخزون جيد'}
-          </div>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="text-right">
-          <div class="text-xs font-bold ${empty ? 'text-red-400' : 'text-stone-300'}">${cur} / ${max}</div>
-          <div class="text-[10px] text-stone-500">المتوفر</div>
-        </div>
-        ${unlocked ? `
-          <button onclick="buyStock('${id}',1)" class="btn-3d px-2.5 py-2 ${state.money >= p.buy && cur < max ? 'bg-amber-600 text-stone-950' : 'bg-stone-800 text-stone-500'} font-bold rounded-lg text-xs">+1</button>
-          <button onclick="buyStock('${id}',5)" class="btn-3d px-2.5 py-2 ${state.money >= p.buy && cur < max ? 'bg-emerald-600 text-white' : 'bg-stone-800 text-stone-500'} font-bold rounded-lg text-xs">+5</button>
-        ` : ''}
-      </div>`;
-    list.appendChild(div);
-  }
-}
-
-function renderUpgradesModal() {
-  const list = document.getElementById('upgrades-list');
-  if (!list) return;
-  list.innerHTML = '';
-  for (const key in UPGRADE_TYPES) {
-    const up = UPGRADE_TYPES[key];
-    const lvl = state.upgrades[key];
-    const isMax = lvl >= up.maxLevel;
-    const cost = up.baseCost * lvl;
-    const can = state.money >= cost;
-    const card = document.createElement('div');
-    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center';
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center text-emerald-400 text-lg">
-          <i class="fa-solid ${up.icon}"></i>
-        </div>
-        <div>
-          <div class="font-bold text-white text-sm">${up.name}</div>
-          <div class="text-[11px] text-stone-400">${up.desc}</div>
-          <div class="text-[10px] text-amber-400 font-semibold mt-0.5">المستوى: ${lvl} / ${up.maxLevel}</div>
-        </div>
-      </div>
-      <div>
-        ${!isMax
-          ? `<button onclick="buyUpgrade('${key}')" class="btn-3d px-3 py-2 ${can ? 'bg-emerald-600 text-white' : 'bg-stone-800 text-stone-500'} font-bold rounded-xl text-xs flex flex-col items-center">
-               <span>تطوير</span><span class="text-[10px]">${cost} ج.م</span>
-             </button>`
-          : `<span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800">مكتمل ✅</span>`}
-      </div>`;
-    list.appendChild(card);
-  }
-}
-
-function renderStagesModal() {
-  const list = document.getElementById('stages-list');
-  if (!list) return;
-  list.innerHTML = '';
-  STAGES.forEach((stg, idx) => {
-    const isCurrent = state.stage === idx;
-    const isUnlocked = state.stage >= idx;
-    const canBuy = state.stage === idx - 1;
-    const servedOK = state.totalStats.served >= stg.reqServed;
-    const moneyOK = state.money >= stg.cost;
-    const card = document.createElement('div');
-    card.className = `p-4 rounded-2xl border ${isCurrent ? 'bg-amber-950/40 border-amber-500' : 'bg-stone-900 border-stone-800'} flex justify-between items-center gap-3`;
-    card.innerHTML = `
-      <div>
-        <div class="font-bold text-base ${isCurrent ? 'text-amber-400' : 'text-white'} flex items-center gap-2">
-          <span>${stg.name}</span>
-          <span class="text-[10px] text-amber-300">${'★'.repeat(idx + 1)}</span>
-          ${isCurrent ? '<span class="text-[10px] bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full font-black">الحالي</span>' : ''}
-        </div>
-        <div class="text-xs text-stone-400 mt-1">${stg.desc}</div>
-        <div class="text-[11px] text-cyan-400 mt-1">أقصى زبائن: ${stg.maxCustomers} • أرباح ×${stg.mult}</div>
-        ${!isUnlocked && stg.reqServed > 0 ? `<div class="text-[10px] mt-1 ${servedOK ? 'text-emerald-400' : 'text-stone-500'}">خدمة مطلوبة: ${Math.min(state.totalStats.served, stg.reqServed)} / ${stg.reqServed} زبون</div>` : ''}
-      </div>
-      <div>
-        ${isUnlocked
-          ? (isCurrent ? '' : '<span class="text-xs text-emerald-400 font-bold">مفتوح ✔</span>')
-          : (canBuy
-              ? `<button onclick="unlockStage(${idx})" class="btn-3d px-3 py-2 ${moneyOK && servedOK ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950' : 'bg-stone-800 text-stone-500'} font-bold rounded-xl text-xs flex flex-col items-center">
-                   <span>افتتاح</span><span class="text-[10px]">${stg.cost} ج.م</span>
-                 </button>`
-              : `<span class="text-xs text-stone-600 font-bold">🔒 ${stg.cost} ج.م</span>`)}
-      </div>`;
-    list.appendChild(card);
-  });
-}
-
-function renderQuestsModal() {
-  const list = document.getElementById('quests-list');
-  if (!list) return;
-  list.innerHTML = '';
-  state.quests.forEach(q => {
-    const card = document.createElement('div');
-    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center gap-3';
-    card.innerHTML = `
-      <div>
-        <div class="font-bold text-white text-sm">${q.text}</div>
-        <div class="text-xs text-stone-400 mt-0.5">التقدم: <span class="text-amber-400 font-bold">${Math.min(q.current, q.target)}</span> / ${q.target}</div>
-        <div class="text-[11px] text-yellow-400 font-bold mt-1">المكافأة: +${q.reward} ج.م 💰</div>
-      </div>
-      <div>
-        ${q.claimed
-          ? '<span class="text-xs font-bold text-stone-500">تم الاستلام ✔</span>'
-          : (q.done
-              ? `<button onclick="claimQuest('${q.id}')" class="btn-3d px-3 py-2 bg-emerald-500 text-white font-bold rounded-xl text-xs animate-bounce">استلم الجائزة</button>`
-              : '<span class="text-xs text-stone-600 font-bold">جاري التنفيذ...</span>')}
-      </div>`;
-    list.appendChild(card);
-  });
-}
-
-function renderAchievementsModal() {
-  const list = document.getElementById('achievements-list');
-  if (!list) return;
-  list.innerHTML = '';
-  state.achievements.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center gap-3';
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-stone-800 border border-amber-500/50 flex items-center justify-center text-xl">${a.done ? '🏆' : '🔒'}</div>
-        <div>
-          <div class="font-bold text-white text-sm">${a.title}</div>
-          <div class="text-[11px] text-stone-400">${a.desc}</div>
-          <div class="text-[10px] text-amber-400 font-bold mt-0.5">جائزة: +${a.reward} ج.م</div>
-        </div>
-      </div>
-      <div>
-        ${a.claimed
-          ? '<span class="text-xs text-stone-500 font-bold">تمت ✔</span>'
-          : (a.done
-              ? `<button onclick="claimAchievement('${a.id}')" class="btn-3d px-3 py-2 bg-yellow-500 text-stone-950 font-black rounded-xl text-xs">استلام</button>`
-              : '<span class="text-xs text-stone-600 font-bold">مقفل</span>')}
-      </div>`;
-    list.appendChild(card);
-  });
-}
-
-function openModal(modalId) {
-  initAudio();
-  document.querySelectorAll('[id$="-modal"]').forEach(m => {
-    if (m.id !== 'start-menu-modal' && m.id !== 'day-summary-modal') m.classList.add('hidden');
-  });
-  if (modalId === 'inventory-modal') renderInventoryModal();
-  if (modalId === 'upgrades-modal') renderUpgradesModal();
-  if (modalId === 'stages-modal') renderStagesModal();
-  if (modalId === 'quests-modal') renderQuestsModal();
-  if (modalId === 'achievements-modal') renderAchievementsModal();
-  const t = document.getElementById(modalId);
-  if (t) t.classList.remove('hidden');
-}
-function closeModal(modalId) {
-  initAudio();
-  const t = document.getElementById(modalId);
-  if (t) t.classList.add('hidden');
-  lastInteractKey = '__force__';
-}
-
-/* =============================================================
-   SETTINGS TOGGLES
-   ============================================================= */
-function paintToggle(id, on) {
-  const btn = document.getElementById(id);
-  if (!btn) return;
-  btn.className = `w-12 h-6 ${on ? 'bg-emerald-600' : 'bg-stone-700'} rounded-full flex items-center p-1 cursor-pointer transition`;
-  const knob = btn.querySelector('div');
-  if (knob) knob.className = `w-4 h-4 bg-white rounded-full transition transform ${on ? 'translate-x-0' : '-translate-x-6'}`;
-}
-function syncToggles() {
-  paintToggle('sfx-toggle', state.settings.sfx);
-  paintToggle('music-toggle', state.settings.music);
-  paintToggle('vib-toggle', state.settings.vib);
-}
-function toggleSFX() { state.settings.sfx = !state.settings.sfx; paintToggle('sfx-toggle', state.settings.sfx); saveGame(); }
-function toggleMusic() {
-  state.settings.music = !state.settings.music;
-  paintToggle('music-toggle', state.settings.music);
-  if (state.settings.music) { initAudio(); startMusic(); } else stopMusic();
-  saveGame();
-}
-function toggleVib() { state.settings.vib = !state.settings.vib; paintToggle('vib-toggle', state.settings.vib); saveGame(); }
-
-/* =============================================================
-   DAY LIFECYCLE
-   ============================================================= */
-function startGame() {
-  initAudio();
-  startMusic();
-  document.getElementById('start-menu-modal').classList.add('hidden');
-  startDay();
-}
-
-function startDay() {
-  state.dayTimer = state.dayDuration;
-  state.dayRunning = true;
-  dayEnding = false;
-  state.dayStats = { revenue: 0, cost: 0, served: 0, lost: 0, perfect: true };
-  customers = [];
-  player.carrying = [];
-  player.autoTarget = null;
-  player.interactOpen = false;
-  particles = [];
-  spawnCooldown = 1.4;
-  eventTimer = 16 + Math.random() * 8;
-  currentEvent = null;
-  updateCarryHUD();
-  updateHUD();
-  lastInteractKey = '__force__';
-  saveGame();
-}
-
-function endDay() {
-  if (dayEnding) return;
-  dayEnding = true;
-  state.dayRunning = false;
-  state.totalStats.daysPlayed++;
-
-  playSound('day');
-  vibrate([40, 80, 40, 80, 40]);
-
-  if (state.dayStats.lost === 0 && state.dayStats.served > 0) {
-    trackQuest('perfectDay', 1);
-  }
-  trackAchievement('a2', state.money);
-
-  const netProfit = state.dayStats.revenue - state.dayStats.cost;
-  document.getElementById('summary-day-num').innerText = state.day;
-  document.getElementById('sum-revenue').innerText = Math.round(state.dayStats.revenue);
-  document.getElementById('sum-cost').innerText = Math.round(state.dayStats.cost);
-  document.getElementById('sum-profit').innerText = Math.round(netProfit);
-  document.getElementById('sum-served').innerText = state.dayStats.served;
-  document.getElementById('sum-lost').innerText = state.dayStats.lost;
-
-  let stars = '⭐⭐⭐⭐⭐';
-  if (state.dayStats.lost >= 4) stars = '⭐⭐';
-  else if (state.dayStats.lost >= 2) stars = '⭐⭐⭐';
-  else if (state.dayStats.lost === 1) stars = '⭐⭐⭐⭐';
-  else if (state.dayStats.served === 0) stars = '⭐';
-  document.getElementById('sum-stars').innerText = stars;
-
-  document.getElementById('day-summary-modal').classList.remove('hidden');
-  // customers leave
-  customers.forEach(c => { c.state = 'leaving'; });
-  saveGame();
-}
-
-function startNextDay() {
-  state.day++;
-  document.getElementById('day-summary-modal').classList.add('hidden');
-  startDay();
-}
-
-/* =============================================================
-   INIT
-   ============================================================= */
-window.addEventListener('load', () => {
-  resizeCanvas();
-  loadGame();
-  updateCarryHUD();
-  joyReset();
-  renderInventoryModal();
-  requestAnimationFrame(gameLoop);
-});
-window.addEventListener('beforeunload', saveGame);
-document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
-setInterval(saveGame, 20000);
+const NPCS={
+samer:{name:'سامر',role:'موظف قديم',ic:'🧔',intro:'سامر يقف عند الباب ويضع يده على المفتاح، كأنه كان يتوقع مجيئك.',qs:[{q:'متى عملت مريم هنا؟',a:'أربعة أشهر فقط. لكنها عرفت عن المخزن أكثر مني في عشرين سنة.'},{q:'ما الذي كانت تبحث عنه؟',a:'كانت تصور بيانات الشحن ليلاً. قالت: هذا عمل موظفة ذكية.'},{q:'من كان يطلب البقاء بعد الدوام؟',a:'فادي. كان يقفل الباب ويسلم شحنات بلا أوراق.'},{q:'رأيتها آخر مرة أين؟',a:'عند رف الصناديق تُخرج صندوقاً خشبياً. قلت اتركيه. قالت: هو لن يتركني.'},{q:'لماذا لم تتكلم؟',a:'لأن عندي بيت. أنا آسف... هذا كل ما أستطيع قوله.'}],ng:'في المرة الماضية نسيت أن أقول: نادر كان يترك لي أجرة الشحن في ظرف. لم آخذها مرة واحدة.',onEnd:(id)=>{addEv(id,'e_samer');addEv(id,'e_maryam');}},
+najib:{name:'الحاج نجيب',role:'صاحب المخزن',ic:'👴',intro:'يجلس على كرسي خشبي ويقول دون أن ينظر: الصندوق؟ أي صندوق؟',qs:[{q:'الصندوق ١٧ وصل مرتين ولم يُسلم؟',a:'إذا الشحنة بلا مستلم تبقى. هذا القانون.'},{q:'من وقع على الشحنات؟',a:'فادي هو مسؤول الشحن. أنا لا أقرأ الأوراق.'},{q:'مريم مراد؟',a:'بنت مؤدبة كانت تسأل كثيراً. من يسأل كثيراً يخاف.'},{q:'الحريق في الأرشيف؟',a:'أوراق كثيرة تحترق كل يوم.'},{q:'ماذا كان داخل الشحنات؟',a:'هذا لا يُسأل في دكان مفتوح. اسأل صاحب التوقيع.'},{q:'الرجل المجهول؟',a:'صوت الهاتف كان يطلبه: أعد لي الملف.'}],ng:'سأعترف لك هذه المرة: أنا من أبقيت الصندوق مصوناً. خفت أن يضيع الدليل وتلصق بي.',onEnd:(id)=>{addEv(id,'e_najib');addEv(id,'e_najib_story');openPuzzle('p_contra');}},
+fadi:{name:'فادي',role:'مسؤول الشحن',ic:'🧑‍💼',intro:'واقف خلف المنصة يمسح وجهه بمنديل أكثر من اللازم.',qs:[{q:'لماذا كل البيانات بتوقيعك؟',a:'لأن هذا عملي. أوقع مئة شحنة يومياً.'},{q:'شحنة ١٧ لم تُسلم ولم تُهمل؟',a:'لا أتذكر... أرجوك لا تفتح هذا الموضوع.'},{q:'رسالة تخلصوا من ملف ١٧؟',a:'كتبتها لأن أحدهم طلب مني. كنت خائفاً.'},{q:'من طلب؟',a:'ليس الحاج. أحدهم من الخارج كان يعرف أكثر مني.'},{q:'الشريط الناقص؟',a:'وجدته مقطوعاً. ولم أسأل.'}],ng:'الـ12 دقيقة... رأيت فيها ظل نادر. عرفته من مشيته. ولم أقل.',onEnd:(id)=>{addEv(id,'e_fadi');addEv(id,'e_fadi2');}},
+nader:{name:'الشخص المجهول',role:'؟؟؟',ic:'🕶️',intro:'رجل في ظل الرفوف. لم تسمع الباب. يقول: متأخر... لكنك وصلت.',qs:[{q:'من أنت؟',a:'نادر مراد. أخو مريم. كنت صحفياً والآن لا وجود لي في سجل.'},{q:'أنت من أرسل الصندوق؟',a:'نعم. ثلاث مرات. أدفع الشحن وأكتب حرفاً واحداً.'},{q:'لماذا لم تسلمه للشرطة؟',a:'سلمت ملفاً قبل ٦ سنوات فاحترق الأرشيف. الشحنات لا تحترق.'},{q:'أين مريم؟',a:'لا أعرف. وهذه أقسى جملة قلتها في حياتي.'},{q:'لماذا ظهر الليلة؟',a:'لأن الحماية توقفت. ولأن هناك من ظن أن الجميع نسي.'}],ng:'بما أنك عدت مرة ثانية... سأخبرك أين خبأت النسخة الرابعة: تحت ميزان السوق.',onEnd:(id)=>{addEv(id,'e_nader');}}};
+const PUZ={
+p_lock1:{type:'code',title:'القفل البرونزي',len:3,code:'249',q:'قفل بثلاثة أرقام على الصندوق.\nتحتاج رقماً من الأوراق المرفقة.\n💡 تلميح اللغز: رقم الإيصال على ظهر البوليصة.',onSolve:{ev:'e_note1',text:'يدور القفل. ترفع الغطاء...\nورقة مطوية فقط. وطبقة خشب رقيقة لا تُفتح باليد.'}},
+p_drawer:{type:'code',title:'درج المكتب المقفل',len:4,code:'1204',q:'درج بأربعة أرقام.\n«التاريخ الذي توقف فيه كل شيء».\n(اليوم ثم الشهر: ٤ ديسمبر = 1204)',onSolve:{ev:'e_drawer',text:'يفتح الدرج بصرير.\nملف بلاستيكي وعقد عمل وبقايا شريط.'}},
+p_match:{type:'match',title:'ربط الشخصيات',q:'صل كل شخص بما يخفيه. اضغط اسماً ثم ما يقابله.',pairs:[{l:'مريم',r:'وثقت شحنات منتهية'},{l:'فادي',r:'وقع استلام ١٧ ثلاثاً'},{l:'الحاج نجيب',r:'أبقى الباب لمن يدفع'},{l:'سامر',r:'رآها آخر مرة وسكت'}],onSolve:{ev:'e_tornphoto',text:'تتجمع القطع كصورة كاملة.\nلم تكن عائلية... كانت خريطة علاقات.'}},
+p_contra:{type:'multi',title:'كشف التناقض',need:3,q:'في كلام نجيب ٣ جمل تكذب على الأدلة. اخترها بدقة.',items:[{x:'«لم أر صندوق ١٧ في حياتي.»',bad:true},{x:'«المخزن صغير برفين فقط.»',bad:false},{x:'«أغلقت المخزن ٢٠١٩ ولم أدخله.»',bad:true},{x:'«فادي يوقع كل الأوراق.»',bad:false},{x:'«مريم سافرت وتواصلت معي.»',bad:true},{x:'«الشحنات بلا مستلم تبقى.»',bad:false}],onSolve:{ev:'e_najib_story',text:'تنظر لنجيب. هو يعرف أنك عرفت.\n«أنت مثلها تماماً.»'}},
+p_order:{type:'order',title:'ترتيب ملفات الأرشيف',q:'رتّب الملفات زمنياً من الأقدم للأحدث بالضغط بالترتيب.',items:['ملف ٢٠١٨ — بلاغ شحنات طبية','ملف ٢٠١٩ — تحقيق ١٧/ب','ملف ٢٠٢١ — إعادة إدخال مرفوضة','ملف اليوم — استعلام عن ١٧'],onSolve:{ev:'e_archive_note',text:'الملف لم يُغلق... أُوقف فقط.'}},
+p_safe:{type:'code',title:'الخزنة الحديدية',len:3,code:'481',q:'خزنة بثلاثة أرقام.\n«الرمز هو رقم الرف مقلوباً.»\n💡 رقم الرف 184.',onSolve:{ev:'e_safe',text:'تفتح الخزنة. مظروف ومفتاحان وأربعة توقيعات. واحد بجانبه «رفض».'}},
+p_timeline:{type:'order',title:'إعادة بناء الليلة',q:'رتب الأحداث الخمسة زمنياً.',items:['٢٨/١١/٢٠١٩ — مريم تصور بياناً','٠٣/١٢/٢٠١٩ — وصول ١٧','٠٤/١٢/٢٠١٩ — آخر يوم لمريم','٠٦/١٢/٢٠١٩ — قطع ١٢ دقيقة','٠٩/١٢/٢٠١٩ — إغلاق التحقيق'],onSolve:{ev:'e_cctv',text:'مريم اختفت قبل القطع... القاطع كان يعرف.'}},
+p_cipher:{type:'code',title:'شيفرة الورقة',len:4,code:'نادر',letters:'نادرفتلك',q:'⌇=ن ❖=ا ⌘=د ✦=ر\nوتحت الجدول: ⌇ ❖ ⌘ ✦\nاكتب الاسم.',onSolve:{ev:'e_nader',text:'الاسم: نادر. له أخت وملف محروق.'}},
+p_route:{type:'link',title:'ربط الأدلة',pair:['e_record','e_registry'],q:'افتح ملف التحقيق واربط «التسجيل الكامل» بـ«سجل الشحنات».',onSolve:{ev:'e_truth',text:'التسجيل والسجل يكملان بعضهما. الصندوق كان يُنقل عمداً.'}},
+p_bottom:{type:'code',title:'القاع الزائف',len:4,code:'1203',q:'قفل أرقام مخفي.\n«التاريخ الذي بدأ فيه كل شيء».\n💡 الرقم محفور في B1.',onSolve:{ev:'e_hidden',text:'ترتفع الطبقة. نسخ أصلية وبطاقة بخط مريم.'}}};
+const STAGES=[
+{id:1,title:'الليلة الأخيرة',place:'مخزن «النور للشحن» — ٨:٤٢ مساءً',goal:'افحص الصندوق ١٧ والورق حوله، وابحث في الرفوف.',bg:{c1:'#0b0f16',c2:'#1a1410'},props:[{t:'shelf',x:-2,y:8,w:26,h:84},{t:'shelf',x:76,y:8,w:26,h:84},{t:'window',x:30,y:4,w:14,h:22,glow:true},{t:'desk',x:26,y:74,w:48,h:20},{t:'box',x:36,y:56,w:28,h:20},{t:'lamp',x:56,y:44,w:16,h:24},{t:'door',x:44,y:6,w:12,h:30}],intro:['أطفأ سامر الأنوار وترك لك المفتاح.','بقيت وحدك بين الرفوف... وشحنة لم يوقع عليها أحد.','صندوق خشبي قديم. رقم أحمر باهت: ١٧.'],hotspots:[{id:'s1_box',x:50,y:60,ic:'📦',lbl:'الصندوق ١٧',req:true,act:{t:'inspect',name:'الصندوق رقم ١٧',text:'بارد وثقيل. قفل برونزي صغير على المقدمة.',ev:'e_box17'}},{id:'s1_label',x:36,y:50,ic:'📄',lbl:'بوليصة الشحن',req:true,act:{t:'inspect',name:'بوليصة الشحن',text:'المرسل «ن». التاريخ ٢٠١٩/١٢/٠٣. رقم الإيصال ٢٤٩.',ev:'e_label'}},{id:'s1_lock',x:63,y:62,ic:'🔒',lbl:'القفل البرونزي',req:true,act:{t:'puzzle',id:'p_lock1'}},{id:'s1_log',x:32,y:73,ic:'📒',lbl:'دفتر اليومية',req:true,act:{t:'inspect',name:'دفتر اليومية',text:'الشحنة ١٧ ثلاث مرات. كل مرة: لم تُسلم. التوقيع: ف.',ev:'e_log'}},{id:'s1_stamp',x:8,y:30,ic:'🔴',lbl:'خلف الرف',req:false,act:{t:'inspect',name:'خلف الرف',text:'شيء مطاطي: ختم بحروف ف. م.',ev:'e_stamp'}},{id:'s1_key',x:22,y:82,ic:'🗝️',lbl:'تحت المكتب',req:false,act:{t:'inspect',name:'تحت المكتب',text:'مفتاح نحاسي صغير ملتصق بشريط.',ev:'e_key'}},{id:'s1_scrap',x:88,y:46,ic:'🧻',lbl:'قصاصة مخفية',req:false,act:{t:'side',name:'قصاصة ١/٣',text:'قصاصة: «...الشحنة ١٧ ليست الأولى...» (مهمة جانبية)',side:'sm1'}},{id:'s1_ng',x:50,y:20,ic:'✨',lbl:'ظرف إضافي',req:false,ngPlus:true,act:{t:'inspect',name:'ظرف سري',text:'تقرير نادر السري (محتوى +).',ev:'e_ng1'}},{id:'s1_door',x:50,y:12,ic:'🚪',lbl:'الباب الخلفي',req:false,act:{t:'look',name:'الباب الخلفي',text:'مقفل من الخارج وزجاجه بورق جرائد.'}}],outro:['الصندوق مفتوح... لكنه ليس فارغاً.','ورقة بخط مرتجف وتوقيع م.','وتحتها طبقة خشب لا تُفتح بيدك.']},
+{id:2,title:'الدرج الذي لا يُفتح',place:'مكتب المخزن — الصباح',goal:'افحص المكتب والحاسوب، وتحدث إلى سامر.',bg:{c1:'#0c1017',c2:'#161a20'},props:[{t:'window',x:6,y:6,w:22,h:30,glow:true},{t:'desk',x:24,y:60,w:56,h:26},{t:'board',x:60,y:8,w:30,h:32},{t:'body',x:14,y:44,w:12,h:26},{t:'shelf',x:82,y:44,w:20,h:48}],intro:['المخزن صباحاً مختلف: ضجيج وأوراق.','سامر ينظر ليدك: لماذا عدت؟ بنبرة خائفة.'],hotspots:[{id:'s2_photo',x:75,y:22,ic:'🖼️',lbl:'الصورة',req:true,act:{t:'inspect',name:'صورة جماعية',text:'خمسة أشخاص. آخر يوم ٤/١٢/٢٠١٩. الخامس مخدوش.',ev:'e_photo_team'}},{id:'s2_drawer',x:30,y:66,ic:'🔐',lbl:'الدرج المقفل',req:true,act:{t:'puzzle',id:'p_drawer'}},{id:'s2_pc',x:62,y:62,ic:'💻',lbl:'الحاسوب',req:true,act:{t:'inspect',name:'الحاسوب',text:'رسالة: تخلصوا من ملف ١٧.',ev:'e_email'}},{id:'s2_samer',x:14,y:52,ic:'🧔',lbl:'سامر',req:true,act:{t:'talk',npc:'samer'}},{id:'s2_trash',x:80,y:56,ic:'🗑️',lbl:'سلة المهملات',req:false,act:{t:'inspect',name:'السلة',text:'قصاصة: المرسل ن. مراد — مستندات.',ev:'e_manifest'}},{id:'s2_shelf',x:88,y:70,ic:'📚',lbl:'رف الملفات',req:false,act:{t:'look',name:'الرف',text:'فجوة في ٢٠١٩ — أربعة ملفات مفقودة.'}}],outro:['في ملف مريم صورة رف فيه ٨ صناديق.','وعنوان: شقة ٧ — عمارة الرمل.']},
+{id:3,title:'شقة مريم',place:'عمارة الرمل — الطابق الثالث',goal:'افحص الشقة وشغل الرد الآلي ورتب الصورة.',bg:{c1:'#0a0c12',c2:'#171318'},props:[{t:'window',x:66,y:6,w:26,h:30,glow:true},{t:'table',x:22,y:62,w:56,h:18},{t:'crate',x:6,y:56,w:12,h:22},{t:'board',x:8,y:10,w:22,h:26},{t:'machine',x:70,y:58,w:18,h:16}],intro:['الباب لم يكن مقفلاً. الغبار يغطي كل شيء إلا زر الرد الآلي.','كأن أحداً ضغطه مؤخراً.'],hotspots:[{id:'s3_tape',x:78,y:64,ic:'🎧',lbl:'الرد الآلي',req:true,act:{t:'listen',name:'جهاز الرد الآلي',lines:['صوت رجل متعب...','«مريم... الملف عاد للظهور.»','«لا تذهبي للمخزن وحدك.»'],ev:'e_tape'}},{id:'s3_letter',x:34,y:66,ic:'✉️',lbl:'ورقة الطاولة',req:true,act:{t:'inspect',name:'ورقة مريم',text:'«خبأت الدليل في شحنة بلا اسم. صندوق ١٧.»',ev:'e_letter_m'}},{id:'s3_torn',x:52,y:64,ic:'🧩',lbl:'صورة ممزقة',req:true,act:{t:'puzzle',id:'p_match'}},{id:'s3_cal',x:16,y:22,ic:'📅',lbl:'التقويم',req:false,act:{t:'inspect',name:'التقويم',text:'١٢/٢٠١٩. اليوم ٤ بدائرة: لا أعود للمخزن.',ev:'e_cal'}},{id:'s3_ng',x:66,y:40,ic:'✨',lbl:'رسالة إضافية',req:false,ngPlus:true,act:{t:'inspect',name:'رسالة +',text:'رسالة مريم الأخيرة (محتوى +).',ev:'e_ng4'}},{id:'s3_window',x:78,y:20,ic:'🪟',lbl:'النافذة',req:false,act:{t:'look',name:'النافذة',text:'أثر إصبع في الغبار يشير للسوق.'}}],outro:['الصورة: مريم ونادر أمام الأرشيف.','«أخي... الباقي عندك.»']},
+{id:4,title:'سوق الحديد',place:'دكان الحاج نجيب',goal:'استجوب نجيب واكتشف ما يكذب بشأنه.',bg:{c1:'#141109',c2:'#241a0d'},props:[{t:'shelf',x:2,y:16,w:22,h:70},{t:'shelf',x:76,y:16,w:22,h:70},{t:'table',x:26,y:62,w:48,h:20},{t:'body',x:44,y:46,w:14,h:28},{t:'lamp',x:30,y:22,w:16,h:22}],intro:['السوق لا يهدأ. نجيب يقول: الصندوق؟ أي صندوق؟','لكن عينيه نظرتا لحقيبتك أولاً.'],hotspots:[{id:'s4_najib',x:50,y:54,ic:'👴',lbl:'الحاج نجيب',req:true,act:{t:'talk',npc:'najib'}},{id:'s4_wage',x:14,y:70,ic:'📗',lbl:'دفتر الأجور',req:true,act:{t:'inspect',name:'دفتر الأجور',text:'مبالغ بلا أسماء. أحدها: شحنة خاصة ١٧.',ev:'e_wage'}},{id:'s4_crates',x:82,y:64,ic:'📦',lbl:'الصناديق',req:false,act:{t:'look',name:'الصناديق',text:'كلها بأختام إلا واحداً بلا مستلم.'}},{id:'s4_chair',x:30,y:50,ic:'🪑',lbl:'الكرسي',req:false,act:{t:'look',name:'الكرسي',text:'مقعد نظيف كأن أحدهم كان هنا.'}}],outro:['«أنت مثلها تماماً» يقول وهو يرحل.']},
+{id:5,title:'غرفة الأرشيف',place:'أرشيف الشركة — القبو',goal:'رتب الملفات وافتح الخزنة واقرأ السجل.',bg:{c1:'#0a0d10',c2:'#14181c'},props:[{t:'shelf',x:0,y:12,w:30,h:78},{t:'shelf',x:70,y:12,w:30,h:78},{t:'safe',x:44,y:58,w:18,h:20},{t:'table',x:28,y:74,w:44,h:16},{t:'pipe',x:50,y:2,w:4,h:40}],intro:['القبو بارد ورائحة ورق رطب.','أربعة ملفات ساقطة وخزنة منسية في الجدار.'],hotspots:[{id:'s5_registry',x:22,y:36,ic:'📚',lbl:'سجل الشحنات',req:true,act:{t:'inspect',name:'السجل الرئيسي',text:'٣ صفحات برقم ١٧: ٢٠١٩، ٢٠٢١، اليوم.',ev:'e_registry'}},{id:'s5_order',x:44,y:80,ic:'🗂️',lbl:'الملفات',req:true,act:{t:'puzzle',id:'p_order'}},{id:'s5_safe',x:52,y:64,ic:'🔐',lbl:'الخزنة',req:true,act:{t:'puzzle',id:'p_safe'}},{id:'s5_scrap',x:82,y:30,ic:'🧻',lbl:'قصاصة مخفية',req:false,act:{t:'side',name:'قصاصة ٢/٣',text:'قصاصة: «...التوقيع الرابع رفض...»',side:'sm1'}},{id:'s5_ng',x:40,y:44,ic:'✨',lbl:'مفتاح إضافي',req:false,ngPlus:true,act:{t:'inspect',name:'مفتاح +',text:'مفتاح الغرفة الجانبية (محتوى +).',ev:'e_ng2'}},{id:'s5_shelf',x:82,y:50,ic:'📁',lbl:'رف ٢٠١٩',req:false,act:{t:'look',name:'رف ٢٠١٩',text:'فجوة بين ٢٠١٨ و٢٠٢٠.'}}],outro:['أربعة توقيعات. ثلاثة بأرقام حسابات وواحد بكلمة «رفض».']},
+{id:6,title:'اثنتا عشرة دقيقة',place:'كشك الشحن — الكاميرات',goal:'راجع الشريط وأعد بناء الليلة واستجوب فادي.',bg:{c1:'#0a0f16',c2:'#101822'},props:[{t:'machine',x:10,y:24,w:34,h:38},{t:'desk',x:50,y:60,w:44,h:24},{t:'body',x:66,y:44,w:14,h:28},{t:'board',x:52,y:6,w:44,h:30}],intro:['ضوء أبيض قاس. تسع شاشات وواحدة سوداء.','«الشريط قديم. لا شيء فيه.»'],hotspots:[{id:'s6_cctv',x:27,y:42,ic:'📹',lbl:'التسجيل',req:true,act:{t:'inspect',name:'شريط ٠٤/١٢',text:'١٢ دقيقة مقطوعة بالمقص. ظل رجل في الإطار الأخير.',ev:'e_cctv'}},{id:'s6_timeline',x:74,y:20,ic:'🧩',lbl:'لوح الأحداث',req:true,act:{t:'puzzle',id:'p_timeline'}},{id:'s6_fadi',x:70,y:54,ic:'🧑‍💼',lbl:'فادي',req:true,act:{t:'talk',npc:'fadi'}},{id:'s6_desk',x:56,y:66,ic:'🗄️',lbl:'الأدراج',req:false,act:{t:'look',name:'الأدراج',text:'مقص كبير عليه شريط داكن.'}}],outro:['«هناك من طلب ذلك. ليس أنا.»']},
+{id:7,title:'الاسم المحروق',place:'الأرشيف الصحفي العام',goal:'ابحث في الصحف وفك الشيفرة.',bg:{c1:'#0b0e12',c2:'#151a1e'},props:[{t:'shelf',x:0,y:20,w:26,h:70},{t:'shelf',x:74,y:20,w:26,h:70},{t:'table',x:28,y:66,w:44,h:20},{t:'machine',x:52,y:40,w:22,h:22}],intro:['قسم ٢٠١٨ مفقود. احترق. والميكروفيلم في هذه الآلة.'],hotspots:[{id:'s7_micro',x:62,y:50,ic:'🔬',lbl:'الميكروفيلم',req:true,act:{t:'inspect',name:'خبر ٢٠١٨',text:'حريق أتلف تحقيقاً عن شحنات طبية.',ev:'e_news'}},{id:'s7_cipher',x:34,y:70,ic:'🔡',lbl:'ورقة الرموز',req:true,act:{t:'puzzle',id:'p_cipher'}},{id:'s7_photo',x:14,y:60,ic:'📷',lbl:'صورة الدرج',req:false,act:{t:'inspect',name:'صورة الدرج',text:'نادر ومريم. «أنا آخذ الشحنات.»',ev:'e_photo2'}},{id:'s7_scrap',x:88,y:36,ic:'🧻',lbl:'قصاصة مخفية',req:false,act:{t:'side',name:'قصاصة ٣/٣',text:'قصاصة: «...ن. مراد دفع الشحن ثلاثاً...»',side:'sm1'}},{id:'s7_lib',x:20,y:34,ic:'👩‍💼',lbl:'الأمينة',req:false,act:{t:'look',name:'الأمينة',text:'رجل كان يبكي في قسم الميكروفيلم.'}}],outro:['نادر مراد. التحقيق احترق وهو اختفى. لكن الشحنات رسائله.']},
+{id:8,title:'المستودع B1',place:'المستودع القديم تحت المخزن',goal:'تنقل في الظلام واعثر على ٤ أشياء.',dark:true,bg:{c1:'#05070a',c2:'#0b0e12'},props:[{t:'shelf',x:0,y:24,w:24,h:66},{t:'shelf',x:78,y:24,w:22,h:66},{t:'crate',x:30,y:58,w:18,h:24},{t:'pipe',x:44,y:0,w:3,h:52}],intro:['باب حديدي وسلّم ومستودع كامل.','مصباحك لا يكفي. اقترب من كل شيء.'],hotspots:[{id:'s8_box18',x:34,y:52,ic:'📦',lbl:'صندوق بالظلام',req:true,dim:true,act:{t:'inspect',name:'صندوق آخر',text:'مطابق لـ ١٧. ملصق: أعيد تحويله. رقمه ١٨.',ev:'e_box18'}},{id:'s8_tool',x:14,y:66,ic:'🧰',lbl:'شيء معدني',req:true,dim:true,act:{t:'inspect',name:'علبة عدة',text:'مفك وقصاصة عن القاع الزائف.',ev:'e_toolbox'}},{id:'s8_paper',x:64,y:70,ic:'🧾',lbl:'ورقة باهتة',req:true,dim:true,act:{t:'inspect',name:'بيان أصلي',text:'المرسل ن. مراد. المستلم أرشيف النور.',ev:'e_manifest'}},{id:'s8_scratch',x:84,y:30,ic:'✍️',lbl:'خدوش الجدار',req:true,dim:true,act:{t:'inspect',name:'خدوش',text:'رقم بضغط قوي: ١٢٠٣. وتحته: بدأ.',ev:null,note:'الرقم ١٢٠٣ على جدار B1 تحت كلمة بدأ.'}}],outro:['B1 ليس مخزناً... إنه مكان انتظار.']},
+{id:9,title:'التسجيل الكامل',place:'الكشك الخلفي — التسجيلات',goal:'شغل التسجيل واربط الأدلة وافتح القاع.',bg:{c1:'#080b10',c2:'#12161c'},props:[{t:'machine',x:18,y:36,w:30,h:32},{t:'table',x:26,y:70,w:48,h:18},{t:'box',x:36,y:56,w:22,h:16},{t:'body',x:74,y:44,w:12,h:26}],intro:['شريط واحد فقط. صوت رجل كأنه يسجل رسالة أخيرة.'],hotspots:[{id:'s9_recorder',x:33,y:50,ic:'🎙️',lbl:'التسجيل',req:true,act:{t:'listen',name:'التسجيل الكامل',lines:['«أنا نادر مراد.»','«مريم اكتشفت إعادة تعبئة أدوية.»','«أرسلت الدليل عبر الشحنات.»','«الذي يبحث عن الصندوق يحرس فضيحة.»'],ev:'e_record'}},{id:'s9_link',x:66,y:78,ic:'🔗',lbl:'اربط الأدلة',req:true,act:{t:'puzzle',id:'p_route'}},{id:'s9_bottom',x:47,y:62,ic:'📜',lbl:'القاع الزائف',req:true,act:{t:'puzzle',id:'p_bottom'}},{id:'s9_ng',x:80,y:40,ic:'✨',lbl:'خريطة إضافية',req:false,ngPlus:true,act:{t:'inspect',name:'خريطة +',text:'خريطة المستودع بخط نادر.',ev:'e_ng5'}},{id:'s9_door',x:80,y:20,ic:'🚪',lbl:'باب خلفي',req:false,act:{t:'look',name:'باب',text:'ممر لرصيف التحميل. من هنا دخل نادر.'}}],outro:['الصندوق كان يُنقل عمداً.','«أنت الآن جزء من الملف.»']},
+{id:10,title:'مواجهة الليلة الأخيرة',place:'مخزن النور — ١١:٥٨ مساءً',goal:'اتخذ قرارك النهائي.',bg:{c1:'#090c12',c2:'#1a1410'},props:[{t:'shelf',x:-2,y:10,w:26,h:82},{t:'shelf',x:76,y:10,w:26,h:82},{t:'box',x:38,y:56,w:26,h:20},{t:'table',x:24,y:74,w:52,h:18},{t:'body',x:66,y:44,w:12,h:26}],intro:['ضوء واحد في الخلف. رجل في الظل: متأخر... لكنك وصلت.'],hotspots:[{id:'s10_nader',x:68,y:54,ic:'🕶️',lbl:'المجهول',req:true,act:{t:'talk',npc:'nader'}},{id:'s10_box',x:50,y:60,ic:'📦',lbl:'الصندوق ١٧',req:true,act:{t:'inspect',name:'الصندوق مفتوحاً',text:'كل الأدلة هنا. لم يبق إلا القرار.',ev:'e_final_note'}},{id:'s10_tape',x:26,y:78,ic:'📼',lbl:'شريط الطاولة',req:false,act:{t:'look',name:'شريط',text:'نسخة احتياطية — للأرشيف العام.'}}],outro:[]}];
+const HINTS={1:['ابدأ من الورقة الصفراء وظهرها.','القفل يحتاج ٣ أرقام من الإيصال.','الكود 249. (يكلف نقطة تلميح)'],2:['الصورة تحمل تاريخاً على ظهرها.','٤/١٢ = اليوم ثم الشهر.','الكود 1204.'],3:['شغل الرد الآلي أولاً.','اربط كل شخص بما يخفيه.','مريم توثيق، فادي تواقيع، نجيب باب، سامر صمت.'],4:['اسأل نجيب كل شيء.','قارن كلامه بالدفتر والتقويم.','الكاذب: لم أر ١٧، أغلقت ٢٠١٩، مريم سافرت.'],5:['رتب بالأقدم أولاً.','الرمز رقم الرف مقلوباً.','الكود 481. الترتيب ٢٠١٨←٢٠١٩←٢٠٢١←اليوم.'],6:['ابدأ من التصوير وانتهِ بالإغلاق.','القطع بعد الاختفاء.','٢٨/١١←٠٣/١٢←٠٤/١٢←٠٦/١٢←٠٩/١٢.'],7:['اتبع جدول الرموز.','⌇ن ❖ا ⌘د ✦ر.','الاسم: نادر.'],8:['اقترب من كل شيء لتضيء النقاط.','ابحث بالزوايا والجدران.','٤ أشياء: ١٨، عدة، بيان، خدوش 1203.'],9:['استمع كاملاً ثم اربط.','التسجيل الكامل + سجل الشحنات.','القاع: 1203.'],10:['اسأل المجهول كل شيء.','القرار يعتمد على أدلتك.','الصمت دائماً، العدالة ١٨، الحقيقة ٢٦+الربط.']};
+/* ---------- STATE ---------- */
+let S=null;const SAVE_KEY='box17_save_v2',BAK_KEY='box17_save_v2_bak';
+function defSettings(){return{musicVol:60,sfxVol:80,voiceVol:80,textSpeed:1,vibration:true,notifications:true,quality:'medium',textSize:'medium',highContrast:false};}
+function freshState(){return{stage:1,maxStage:1,seen:{},ev:{},flags:{},hints:{},notes:[],linkSel:[],endings:[],stageDone:{},sound:false,started:false,xp:0,ach:{},side:{sm1:0,sm2:0,sm3:0,sm4:0,sm5:0},sideDone:{},hintTokens:12,chapterXP:0,puzAttempts:{},dialogues:0,optSeen:0,secrets:0,scraps:{},playStart:Date.now(),playTime:0,ngPlusActive:false,ngUnlocked:false,settings:defSettings()};}
+function save(){if(!S)return;try{S.playTime+=(Date.now()-(S._t||Date.now()));S._t=Date.now();S.savedAt=Date.now();const j=JSON.stringify(S);localStorage.setItem(SAVE_KEY,j);localStorage.setItem(BAK_KEY,j);const d=$('saveDot');if(d){d.textContent='✓ حُفظ '+new Date().toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'});}}catch(e){}}
+function loadSave(){try{let r=localStorage.getItem(SAVE_KEY);if(!r)r=localStorage.getItem(BAK_KEY);if(!r)return null;return JSON.parse(r);}catch(e){try{return JSON.parse(localStorage.getItem(BAK_KEY));}catch(e2){return null;}}}
+function hasSave(){const s=loadSave();return s&&s.started;}
+const $=id=>document.getElementById(id);
+function toAr(n){const m=['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];return String(n).split('').map(c=>m[+c]!==undefined?m[+c]:c).join('');}
+function vib(p){try{if(S&&S.settings.vibration&&navigator.vibrate)navigator.vibrate(p||30);}catch(e){}}
+function toast(msg,kind){const t=$('toast');t.textContent=msg;t.className='toast on'+(kind?' '+kind:'');clearTimeout(t._tm);t._tm=setTimeout(()=>{t.className='toast';},2600);}
+function notify(title,desc,ic){if(!S||!S.settings.notifications){toast(title);return;}const w=$('notifyWrap');const d=document.createElement('div');d.className='notify';d.innerHTML='<div class="nic">'+(ic||'🔔')+'</div><div><div class="nt">'+title+'</div><div class="nd">'+(desc||'')+'</div></div>';w.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transition='.4s';setTimeout(()=>d.remove(),400);},3200);while(w.children.length>3)w.firstChild.remove();}
+/* XP / ACH / SIDE */
+function addXP(n,reason){if(!S)return;const before=getLevel(S.xp).idx;S.xp+=n;S.chapterXP=(S.chapterXP||0)+n;const after=getLevel(S.xp);updateBadges();if(reason)notify('+'+n+' XP',reason,'⭐');if(after.idx>before){setTimeout(()=>{notify('ترقية! '+after.name,'وصلت للمستوى الجديد','🎖');SFX.found();vib([40,40,40]);},600);}save();}
+function updateBadges(){if(!S)return;const L=getLevel(S.xp);if($('pbLvl'))$('pbLvl').textContent='🕵️ '+L.name+' • المستوى '+(L.idx+1);if($('pbXp'))$('pbXp').textContent=S.xp+' XP'+(L.next?' • المتبقي '+(L.next.xp-S.xp):' • MAX');if($('homeXpFill'))$('homeXpFill').style.width=L.pct+'%';if($('gameXpFill'))$('gameXpFill').style.width=L.pct+'%';if($('lvlLine'))$('lvlLine').innerHTML='🕵️ '+L.name+' • '+S.xp+' XP • 💡'+S.hintTokens+' <span class="saveDot" id="saveDot">✓ حفظ تلقائي</span>';if($('hintCount'))$('hintCount').textContent=S.hintTokens;if($('pbTokens'))$('pbTokens').textContent='💡'+S.hintTokens;}
+function unlockAch(id){if(!S||S.ach[id])return;S.ach[id]=true;const a=ACH[id];notify('🏆 إنجاز: '+a.n,a.d,'🏆');SFX.found();vib([30,30,30]);addXP(30,'إنجاز '+a.n);save();}
+function sideProg(id,n){if(!S||S.sideDone[id])return;S.side[id]=Math.min(SIDE[id].need,(S.side[id]||0)+(n||1));if(S.side[id]>=SIDE[id].need){S.sideDone[id]=true;notify('🧭 مهمة جانبية مكتملة: '+SIDE[id].n,'+60 XP','🧭');addXP(60,'مهمة '+SIDE[id].n);S.hintTokens=Math.min(15,S.hintTokens+1);updateBadges();}save();}
+function evCount(){return Object.keys(S.ev).length;}
+function addEv(stageId,id,isSecret){if(!id||!EV[id]||!S)return;if(S.ev[id])return;try{S.ev[id]=true;SFX.found();vib(30);toast('أُضيف للملف: '+EV[id].n,'good');if(isSecret){S.secrets++;addXP(40,'اكتشاف سر: '+EV[id].n);}else addXP(20,'دليل: '+EV[id].n);if(evCount()===1)unlockAch('ach_first');if(evCount()>=10)unlockAch('ach_hawk');if(evCount()>=26)unlockAch('ach_all');if(S.secrets>=3)unlockAch('ach_secrets');updateProgress();updateBadges();save();}catch(e){toast('تم الحفظ رغم خطأ بسيط');save();}}
+function addNote(t){if(!t||S.notes.includes(t))return;S.notes.push(t);toast('سُجلت ملاحظة','good');save();}
+function markSeen(id){S.seen[id]=true;save();}
+function stageData(id){return STAGES.find(s=>s.id===id);}
+/* RENDER */
+function renderStage(){try{const st=stageData(S.stage);if(!st)return;$('stgNum').textContent='المرحلة '+toAr(st.id)+' / ١٠'+(S.ngPlusActive?' +':'');$('stgTitle').textContent=st.title;$('stgPlace').textContent=st.place;$('stgGoal').innerHTML='<b>الهدف:</b><span>'+st.goal+'</span>';const art=$('art');art.innerHTML='';art.style.background='linear-gradient(180deg,'+st.bg.c1+','+st.bg.c2+')';st.props.forEach(p=>{const d=document.createElement('div');d.className='prop prop-'+p.t+(p.glow?' prop-glow':'');d.style.cssText='left:'+p.x+'%;top:'+p.y+'%;width:'+p.w+'%;height:'+p.h+'%';art.appendChild(d);});const l1=document.createElement('div');l1.className='prop prop-lamp';l1.style.cssText='left:14%;top:0%;width:72%;height:52%;opacity:.32';art.appendChild(l1);const hs=$('hotspots');hs.innerHTML='';st.hotspots.forEach(h=>{if(h.ngPlus&&!S.ngPlusActive)return;const d=document.createElement('div');d.className='hs'+(S.seen[h.id]?' done':'')+((st.dark&&h.dim)?' hiddenone':'')+(h.ngPlus?' ngplus':'');d.style.left=h.x+'%';d.style.top=h.y+'%';d.dataset.hid=h.id;d.innerHTML='<div class="hs-dot">'+h.ic+'</div><div class="hs-lbl">'+h.lbl+'</div>';d.onclick=e=>{e.stopPropagation();doHotspot(st,h);};hs.appendChild(d);});const sc=$('scene');if(st.dark){sc.classList.add('darkmode');SFX.dark();}else sc.classList.remove('darkmode');updateProgress();updateBadges();checkStage();}catch(e){toast('خطأ في المشهد — أُعيد التحميل');setTimeout(renderStage,600);}}
+function doHotspot(st,h){try{SFX.click();const first=!S.seen[h.id];markSeen(h.id);const el=document.querySelector('[data-hid="'+h.id+'"]');if(el)el.classList.add('done');if(!h.req&&first){S.optSeen++;sideProg('sm2',1);if(S.optSeen>=5)unlockAch('ach_watch');}const a=h.act;if(a.t==='inspect'){const secret=!h.req&&!!a.ev;if(a.ev)addEv(st.id,a.ev,secret);if(a.note)addNote(a.note);openSheetDoc(a.name,a.text+(S.ngPlusActive&&h.ngPlus?'\n\n✨ (محتوى تحقيق جديد+)':''),a.ev);}else if(a.t==='side'){if(!S.scraps[h.id]){S.scraps[h.id]=true;sideProg('sm1',1);addXP(25,'قصاصة جانبية');}openSheetDoc(a.name,a.text,null);}else if(a.t==='listen'){if(a.ev)addEv(st.id,a.ev,false);openSheetListen(a.name,a.lines,a.ev);}else if(a.t==='look'){openSheetDoc(a.name,a.text,null);}else if(a.t==='puzzle'){openPuzzle(a.id);}else if(a.t==='talk'){openDialogue(a.npc,st.id);}checkStage();}catch(e){toast('حدث خطأ — لم تفقد تقدمك','bad');save();}}
+function updateProgress(){const st=stageData(S.stage);if(!st)return;const req=st.hotspots.filter(h=>h.req);const done=req.filter(h=>S.seen[h.id]).length;const inner=st.hotspots.filter(h=>h.act.t==='puzzle').map(h=>h.act.id);const solved=inner.filter(p=>S.flags['pz_'+p]).length;const local=(done+solved)/Math.max(1,req.length+inner.length);$('pfill').style.width=Math.min(100,((S.stage-1)+local)/10*100)+'%';}
+function checkStage(){const st=stageData(S.stage);if(!st||S.stageDone[st.id])return;if($('modal').classList.contains('hidden')==false&&pzCur)return;const reqOk=st.hotspots.filter(h=>h.req).every(h=>S.seen[h.id]);const inner=st.hotspots.filter(h=>h.act.t==='puzzle').map(h=>h.act.id);const pOk=inner.every(p=>S.flags['pz_'+p]);if(reqOk&&pOk){S.stageDone[st.id]=true;S.maxStage=Math.max(S.maxStage,Math.min(10,st.id+1));save();setTimeout(()=>stageComplete(st),700);}}
+function stageComplete(st){SFX.heart();addXP(100,'إكمال الفصل '+st.id);const used=S.hints[st.id]||0;if(used===0){unlockAch('ach_nohelp');sideProg('sm3',1);}S.hintTokens=Math.min(15,S.hintTokens+2);updateBadges();const lines=(st.outro&&st.outro.length)?st.outro.slice():['...'];if(S.ngPlusActive)lines.push('✨ (تغيير +): تشعر أنك عشت هذه الليلة من قبل... لكن التفاصيل أوضح هذه المرة.');cine(lines,()=>{showChapterComplete(st,()=>{if(st.id>=10){finalScene();return;}S.stage=st.id+1;S.maxStage=Math.max(S.maxStage,S.stage);S.chapterXP=0;save();const nx=stageData(S.stage);showLoading(nx.place,()=>{cine(nx.intro,()=>{renderStage();save();});});});});}
+/* LOADING */
+const TIPS=['افحص كل زاوية قبل المغادرة','النقاط الذهبية مهمة للقصة','الخلفية تحمل أسراراً جانبية','التلميحات محدودة — استخدمها بحكمة','اربط الأدلة في ملف التحقيق','الصندوق 17 ليس وحده'];
+function showLoading(txt,cb){const l=$('loading');l.classList.remove('hidden');$('loadingText').textContent=txt||'جاري التحميل...';$('loadTip').textContent='تلميح: '+TIPS[Math.floor(Math.random()*TIPS.length)];const f=$('loadFill');f.style.width='0%';let p=0;const iv=setInterval(()=>{p+=20+Math.random()*25;if(p>=100){p=100;clearInterval(iv);setTimeout(()=>{l.classList.add('hidden');cb&&cb();},250);}f.style.width=p+'%';},180);}
+/* CINE */
+function cine(lines,cb){const c=$('cine'),box=$('cineText');c.classList.remove('hidden');box.innerHTML='';const sp=S?S.settings.textSpeed:1;lines.forEach((l,i)=>{const p=document.createElement('p');p.textContent=l;p.style.animationDelay=(i*0.55/sp)+'s';box.appendChild(p);});let btn=c.querySelector('.cineSkip');if(!btn){btn=document.createElement('button');btn.className='cineSkip';c.appendChild(btn);}btn.textContent='متابعة ▸';btn.style.opacity='0.3';btn.onclick=()=>{SFX.click();c.classList.add('hidden');cb&&cb();};setTimeout(()=>btn.style.opacity='1',Math.max(800,lines.length*550/sp));}
+/* SHEETS */
+function closeSheet(){$('sheet').classList.add('hidden');}function closeModal(){$('modal').classList.add('hidden');checkStage();}
+$('sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet();};$('modal').onclick=e=>{if(e.target.id==='modal'){closeModal();}};
+function openSheetDoc(name,text,evId){SFX.paper();const b=$('sheetBox');b.innerHTML='';const t=document.createElement('div');t.className='mTitle';t.textContent=name;b.appendChild(t);if(evId&&EV[evId]){const ty=document.createElement('div');ty.className='mType';ty.textContent='✓ سُجل في الملف • '+EV[evId].t+' • +XP';b.appendChild(ty);}const tx=document.createElement('div');tx.className='mText';tx.textContent=text;b.appendChild(tx);const btn=document.createElement('button');btn.className='closeBtn gold';btn.textContent='إغلاق ✓';btn.onclick=()=>{SFX.click();closeSheet();};b.appendChild(btn);$('sheet').classList.remove('hidden');}
+function openSheetListen(name,lines,evId){const b=$('sheetBox');b.innerHTML='';const t=document.createElement('div');t.className='mTitle';t.textContent='🎧 '+name;b.appendChild(t);const ty=document.createElement('div');ty.className='mType';ty.textContent='● تشغيل التسجيل...';b.appendChild(ty);const box=document.createElement('div');box.className='mText';const sp=S.settings.textSpeed;b.appendChild(box);lines.forEach((l,i)=>{const p=document.createElement('div');p.textContent=l;p.style.opacity='0';p.style.transition='opacity .7s';p.style.marginBottom='8px';box.appendChild(p);setTimeout(()=>{p.style.opacity='1';noise(0.25,1200,2,0.05);},700/sp+i*900/sp);});const btn=document.createElement('button');btn.className='closeBtn gold';btn.textContent='إغلاق';btn.style.opacity='0';btn.onclick=()=>{SFX.click();closeSheet();};b.appendChild(btn);setTimeout(()=>btn.style.opacity='1',700/sp+lines.length*900/sp);$('sheet').classList.remove('hidden');}
+/* PUZZLES */
+let pzCur=null;
+function openPuzzle(id){try{const p=PUZ[id];if(!p)return;pzCur=id;const b=$('modalBox');b.innerHTML='';const ti=document.createElement('div');ti.className='padTitle';ti.textContent='🧩 '+p.title;const q=document.createElement('div');q.className='padQ';q.textContent=p.q;b.appendChild(ti);b.appendChild(q);const att=document.createElement('div');att.style.cssText='font-size:10px;color:#5e6559;text-align:center;margin-bottom:8px';att.textContent='المحاولات: '+(S.puzAttempts[id]||0)+' • تقدمك محفوظ تلقائياً';b.appendChild(att);const area=document.createElement('div');area.id='pzArea';b.appendChild(area);const msg=document.createElement('div');msg.id='pzMsg';msg.style.cssText='font-size:12px;text-align:center;margin-top:12px;min-height:20px;color:#c4534a';b.appendChild(msg);if(p.type==='code')renderCode(p,area);if(p.type==='order')renderOrder(p,area);if(p.type==='match')renderMatch(p,area);if(p.type==='multi')renderMulti(p,area);if(p.type==='link'){area.innerHTML='<button class="closeBtn gold" id="pzOpenFile">🔗 فتح ملف التحقيق للربط</button>';$('pzOpenFile').onclick=()=>{closeModal();openFile(true);};}const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;margin-top:8px';const rb=document.createElement('button');rb.className='closeBtn';rb.style.flex='1';rb.textContent='↻ إعادة اللغز';rb.onclick=()=>{SFX.click();openPuzzle(id);};const cb=document.createElement('button');cb.className='closeBtn';cb.style.flex='1';cb.textContent='إغلاق (بدون فقدان)';cb.onclick=()=>{SFX.click();pzCur=null;closeModal();};row.appendChild(rb);row.appendChild(cb);b.appendChild(row);$('modal').classList.remove('hidden');}catch(e){toast('تعذر فتح اللغز — حاول مجدداً','bad');}}
+function pzFail(m){SFX.err();vib([50,30,50]);if(pzCur)S.puzAttempts[pzCur]=(S.puzAttempts[pzCur]||0)+1;save();const mm=$('pzMsg');if(mm){mm.textContent=(m||'غير صحيح... أعد التفكير. (تقدمك محفوظ)')+' ✓';mm.style.color='#c4534a';}}
+function pzWin(p){try{SFX.unlock();vib(40);const firstTry=(S.puzAttempts[pzCur]||0)===0;S.flags['pz_'+pzCur]=true;if(p.type==='code'&&firstTry)sideProg('sm4',1);const solved=Object.keys(S.flags).filter(k=>k.startsWith('pz_')).length;if(solved>=5)unlockAch('ach_real');if(pzCur==='p_route')unlockAch('ach_truth');addXP(pzCur==='p_route'||pzCur==='p_contra'?60:50,'حل لغز: '+p.title);const m=$('pzMsg');if(m){m.textContent='✓ صحيح! +XP';m.style.color='#5fb0a5';}const data=PUZ[pzCur];const cur=pzCur;setTimeout(()=>{pzCur=null;closeModal();if(data.onSolve){if(data.onSolve.ev)addEv(S.stage,data.onSolve.ev,false);if(data.onSolve.text)openSheetDoc(data.title,data.onSolve.text,data.onSolve.ev);}updateProgress();save();const st=stageData(S.stage);if(st)st.hotspots.forEach(h=>{if(h.act.t==='puzzle'&&h.act.id===cur){markSeen(h.id);const el=document.querySelector('[data-hid="'+h.id+'"]');if(el)el.classList.add('done');}});checkStage();},850);}catch(e){save();toast('تم حل اللغز وحفظه','good');pzCur=null;closeModal();checkStage();}}
+function renderCode(p,area){let val='';const slots=document.createElement('div');slots.className='slots';const isL=!!p.letters,L=p.len;function draw(){slots.innerHTML='';for(let i=0;i<L;i++){const s=document.createElement('div');s.className='slot'+(i===val.length?' on':'');s.textContent=val[i]||'';slots.appendChild(s);}}draw();area.appendChild(slots);const pad=document.createElement('div');pad.className='keypad';function addKey(k,fn){const b=document.createElement('button');b.className='key';b.textContent=k;b.onclick=()=>{SFX.click();fn();};pad.appendChild(b);}if(!isL){['1','2','3','4','5','6','7','8','9','0'].forEach(k=>addKey(k,()=>{if(val.length<L){val+=k;draw();}}));addKey('⌫',()=>{val=val.slice(0,-1);draw();});addKey('✓',()=>{if(val===p.code)pzWin(p);else{pzFail();val='';draw();}});}else{p.letters.split('').forEach(k=>addKey(k,()=>{if(val.length<L){val+=k;draw();}}));const bc=document.createElement('button');bc.className='key wide';bc.textContent='مسح';bc.onclick=()=>{SFX.click();val='';draw();};pad.appendChild(bc);const be=document.createElement('button');be.className='key wide';be.textContent='تأكيد ✓';be.style.background='linear-gradient(180deg,#d9a24a,#a9752a)';be.style.color='#1a1206';be.onclick=()=>{if(val===p.code)pzWin(p);else{pzFail('الاسم غير صحيح...');val='';draw();}};pad.appendChild(be);}area.appendChild(pad);}
+function renderOrder(p,area){const wrap=document.createElement('div');wrap.className='orderList';const picked=[];const sh=p.items.map((x,i)=>i).sort(()=>Math.random()-0.5);sh.forEach(idx=>{const d=document.createElement('div');d.className='oItem';d.innerHTML='<div class="oNum">•</div><div>'+p.items[idx]+'</div>';d.onclick=()=>{if(picked.includes(idx))return;SFX.click();picked.push(idx);d.classList.add('picked');d.querySelector('.oNum').textContent=picked.length;if(picked.length===p.items.length){let ok=true;for(let i=0;i<picked.length;i++)if(picked[i]!==i)ok=false;if(ok)pzWin(p);else{pzFail('الترتيب غير صحيح...');setTimeout(()=>{picked.length=0;wrap.querySelectorAll('.oItem').forEach(e=>{e.classList.remove('picked');e.querySelector('.oNum').textContent='•';});},800);}}};wrap.appendChild(d);});area.appendChild(wrap);}
+function renderMatch(p,area){const wrap=document.createElement('div');wrap.className='matchWrap';const L=document.createElement('div');L.className='matchCol';const R=document.createElement('div');R.className='matchCol';let sL=null,sR=null,matched=0;const rO=p.pairs.map((x,i)=>i).sort(()=>Math.random()-0.5);p.pairs.forEach((pr,i)=>{const d=document.createElement('div');d.className='mItem';d.textContent=pr.l;d.dataset.i=i;d.onclick=()=>{if(d.classList.contains('done'))return;SFX.click();L.querySelectorAll('.mItem').forEach(e=>e.classList.remove('sel'));d.classList.add('sel');sL=d;tryM();};L.appendChild(d);});rO.forEach(i=>{const d=document.createElement('div');d.className='mItem';d.textContent=p.pairs[i].r;d.dataset.i=i;d.onclick=()=>{if(d.classList.contains('done'))return;SFX.click();R.querySelectorAll('.mItem').forEach(e=>e.classList.remove('sel'));d.classList.add('sel');sR=d;tryM();};R.appendChild(d);});function tryM(){if(!sL||!sR)return;if(sL.dataset.i===sR.dataset.i){sL.classList.add('done');sR.classList.add('done');sL.classList.remove('sel');sR.classList.remove('sel');matched++;tone(600+matched*90,0.25,'sine',0.10);if(matched===p.pairs.length)setTimeout(()=>pzWin(p),450);}else{sL.classList.remove('sel');sR.classList.remove('sel');pzFail('الربط غير صحيح.');}sL=null;sR=null;}wrap.appendChild(L);wrap.appendChild(R);area.appendChild(wrap);}
+function renderMulti(p,area){const wrap=document.createElement('div');const sel=new Set();p.items.map((x,i)=>i).sort(()=>Math.random()-0.5).forEach(i=>{const it=p.items[i];const d=document.createElement('div');d.className='mMulti';d.innerHTML='<div class="chk"></div><div>'+it.x+'</div>';d.onclick=()=>{SFX.click();if(sel.has(i)){sel.delete(i);d.classList.remove('sel');}else{if(sel.size<p.need){sel.add(i);d.classList.add('sel');}else pzFail('اخترت '+p.need+' بالفعل. ألغِ واحدة أولاً.');}};wrap.appendChild(d);});area.appendChild(wrap);const btn=document.createElement('button');btn.className='closeBtn gold';btn.textContent='تأكيد الاختيار ✓';btn.onclick=()=>{if(sel.size!==p.need){pzFail('اختر '+p.need+' جمل بالضبط.');return;}let ok=true;sel.forEach(i=>{if(!p.items[i].bad)ok=false;});if(ok)pzWin(p);else pzFail('إحداها لا تتناقض مع الأدلة.');};area.appendChild(btn);}
+/* DIALOGUE */
+function openDialogue(npcId,stageId){const n=NPCS[npcId];if(!n)return;const b=$('sheetBox');b.innerHTML='';const head=document.createElement('div');head.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:12px';head.innerHTML='<div class="evIc" style="font-size:22px;width:46px;height:46px">'+n.ic+'</div><div><div class="mTitle" style="margin:0">'+n.name+'</div><div class="evTp">'+n.role+'</div></div>';b.appendChild(head);const intro=document.createElement('div');intro.className='mText';intro.textContent=n.intro;b.appendChild(intro);const asked=new Set();const list=document.createElement('div');list.className='evGrid';let qs=n.qs.slice();if(S.ngPlusActive&&n.ng)qs=qs.concat([{q:'✨ (سؤال إضافي +)',a:n.ng}]);qs.forEach((q,i)=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">💬</div><div><div class="evNm">'+q.q+'</div></div>';d.onclick=()=>{if(asked.has(i))return;SFX.click();asked.add(i);d.style.opacity='.45';const a=document.createElement('div');a.style.cssText='background:#0d1117;border:1px solid #222936;border-radius:12px;padding:12px;font-size:12.5px;line-height:2;color:#bdb8a9;margin-bottom:8px;animation:fadeIn .4s';a.textContent='«'+q.a+'»';list.insertBefore(a,d.nextSibling);noise(0.4,900,1.5,0.06);if(asked.size===qs.length){S.dialogues++;sideProg('sm5',1);const fin=document.createElement('button');fin.className='closeBtn gold';fin.textContent='إنهاء الحديث ✓';fin.onclick=()=>{SFX.click();closeSheet();addXP(15,'استجواب كامل');if(n.onEnd)n.onEnd(stageId);checkStage();};b.appendChild(fin);}};list.appendChild(d);});b.appendChild(list);$('sheet').classList.remove('hidden');}
+/* FILE with SEARCH */
+let fileFilter='الكل',fileLinkMode=false,fileSearch='';
+function openFile(linkMode){fileLinkMode=!!linkMode;if(linkMode)S.linkSel=[];fileSearch='';renderFile();$('sheet').classList.remove('hidden');}
+function renderFile(){const b=$('sheetBox');b.innerHTML='';const ti=document.createElement('div');ti.className='mTitle';ti.textContent='📁 ملف التحقيق';const sub=document.createElement('div');sub.className='mType';sub.textContent=evCount()+' دليل • '+S.xp+' XP';b.appendChild(ti);b.appendChild(sub);if(fileLinkMode){const ban=document.createElement('div');ban.style.cssText='background:#1c1610;border:1px solid #6b5225;border-radius:12px;padding:11px;font-size:11.5px;color:#d9a24a;margin-bottom:10px;line-height:1.8';ban.textContent='🔗 وضع الربط: اختر دليلين ثم اضغط «اربط».';b.appendChild(ban);}const sr=document.createElement('input');sr.className='searchBox';sr.placeholder='🔍 بحث في الأدلة...';sr.value=fileSearch;sr.oninput=()=>{fileSearch=sr.value;renderFileList();};b.appendChild(sr);const types=['الكل','دليل','مستند','صورة','تسجيل','شخصية','ملاحظة'];const tabs=document.createElement('div');tabs.className='tabs';types.forEach(t=>{const btn=document.createElement('button');btn.className='tab'+(fileFilter===t?' on':'');btn.textContent=t;btn.onclick=()=>{SFX.click();fileFilter=t;renderFile();};tabs.appendChild(btn);});b.appendChild(tabs);const grid=document.createElement('div');grid.className='evGrid';grid.id='fileGrid';b.appendChild(grid);function renderFileList(){const g=$('fileGrid');if(!g)return;g.innerHTML='';const ids=Object.keys(S.ev);const shown=ids.filter(id=>(fileFilter==='الكل'||EV[id].t===fileFilter)&&(!fileSearch||EV[id].n.includes(fileSearch)||EV[id].d.includes(fileSearch)));if(!shown.length){g.innerHTML='<div class="empty">لا نتائج مطابقة.</div>';return;}shown.forEach(id=>{const ev=EV[id];const d=document.createElement('div');d.className='evCard'+(S.linkSel.includes(id)?' sel':'');d.innerHTML='<div class="evIc">'+ev.ic+'</div><div style="flex:1"><div class="evNm">'+ev.n+'</div><div class="evTp">'+ev.t+'</div></div>';d.onclick=()=>{SFX.click();if(fileLinkMode){if(S.linkSel.includes(id))S.linkSel=S.linkSel.filter(x=>x!==id);else{if(S.linkSel.length<2)S.linkSel.push(id);else S.linkSel=[S.linkSel[1],id];}renderFile();}else{closeSheet();openSheetDoc(ev.n,ev.d,id);}};g.appendChild(d);});}renderFileList();window._rfl=renderFileList;if(fileLinkMode){const btn=document.createElement('button');btn.className='closeBtn gold';btn.textContent='🔗 اربط الدليلين';btn.onclick=()=>{if(S.linkSel.length!==2){toast('اختر دليلين أولاً','bad');return;}const pz=PUZ['p_route'];const a=S.linkSel[0],bb=S.linkSel[1];const ok=(a===pz.pair[0]&&bb===pz.pair[1])||(a===pz.pair[1]&&bb===pz.pair[0]);if(ok){SFX.link();closeSheet();S.flags['pz_p_route']=true;addEv(S.stage,'e_truth',false);unlockAch('ach_truth');addXP(60,'استنتاج صحيح');setTimeout(()=>{openSheetDoc('الحقيقة المركبة',PUZ.p_route.onSolve.text,'e_truth');markSeen('s9_link');updateProgress();save();checkStage();},400);}else{SFX.err();toast('لا رابط منطقي بينهما.','bad');}};b.appendChild(btn);}const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();fileLinkMode=false;closeSheet();};b.appendChild(cl);}
+/* TASKS */
+function openTasks(){const st=stageData(S.stage);const b=$('sheetBox');b.innerHTML='';const t=document.createElement('div');t.className='mTitle';t.textContent='✓ المهام الحالية';const s=document.createElement('div');s.className='mType';s.textContent='الفصل '+toAr(st.id)+' — '+st.title;b.appendChild(t);b.appendChild(s);const list=document.createElement('div');list.className='evGrid';st.hotspots.filter(h=>h.req).forEach(h=>{const done=!!S.seen[h.id];const d=document.createElement('div');d.className='evCard';d.style.opacity=done?'0.55':'1';d.innerHTML='<div class="evIc">'+(done?'✅':'◻️')+'</div><div style="flex:1"><div class="evNm">'+h.lbl+'</div><div class="evTp">'+(done?'تم ✓':'لم يتم بعد')+'</div></div>';list.appendChild(d);});st.hotspots.filter(h=>h.act.t==='puzzle').forEach(h=>{const done=!!S.flags['pz_'+h.act.id];const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">'+(done?'✅':'🧩')+'</div><div style="flex:1"><div class="evNm">لغز: '+PUZ[h.act.id].title+'</div><div class="evTp">'+(done?'تم حله':'غير محلول')+'</div></div>';list.appendChild(d);});b.appendChild(list);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+/* HINTS with TOKENS */
+function useHint(){const st=stageData(S.stage);const used=S.hints[st.id]||0;const hs=HINTS[st.id];if(used>=3){toast('استنفدت تلميحات هذا الفصل','bad');return;}if(S.hintTokens<=0){toast('نفدت نقاط التلميح! أكمل الفصل لتربح المزيد','bad');notify('نقاط التلميح نفدت','أكمل الفصل أو المهمات لتربح نقاطاً','💡');return;}S.hintTokens--;S.hints[st.id]=used+1;updateBadges();SFX.click();save();const b=$('sheetBox');b.innerHTML='';const t=document.createElement('div');t.className='mTitle';t.textContent='💡 تلميح '+toAr(used+1)+' / ٣ (المتبقي '+S.hintTokens+')';const ty=document.createElement('div');ty.className='mType';ty.textContent=used+1===1?'خفيف':used+1===2?'متوسط':'مباشر';const txt=document.createElement('div');txt.className='mText';txt.textContent=hs[used];b.appendChild(t);b.appendChild(ty);b.appendChild(txt);const cl=document.createElement('button');cl.className='closeBtn gold';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+function openNotes(){const b=$('sheetBox');b.innerHTML='';const t=document.createElement('div');t.className='mTitle';t.textContent='📝 ملاحظاتي';b.appendChild(t);if(!S.notes.length)b.appendChild(Object.assign(document.createElement('div'),{className:'empty',textContent:'لا ملاحظات بعد.'}));else{const g=document.createElement('div');g.className='evGrid';S.notes.forEach(n=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">📝</div><div style="flex:1"><div class="evNm" style="font-weight:400">'+n+'</div></div>';g.appendChild(d);});b.appendChild(g);}const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+/* PAUSE */
+function openPause(){const b=$('modalBox');b.innerHTML='';const t=document.createElement('div');t.className='padTitle';t.textContent='⏸ إيقاف مؤقت';b.appendChild(t);const g=document.createElement('div');g.className='evGrid';[{ic:'▶',n:'متابعة اللعب',f:()=>closeModal()},{ic:'📁',n:'ملف التحقيق',f:()=>{closeModal();openFile(false);}},{ic:'⚙',n:'الإعدادات',f:()=>{closeModal();openSettings();}},{ic:'↻',n:'إعادة تشغيل اللغز الحالي',f:()=>{if(pzCur){openPuzzle(pzCur);}else{const st=stageData(S.stage);const p=st.hotspots.find(h=>h.act.t==='puzzle'&&!S.flags['pz_'+h.act.id]);if(p)openPuzzle(p.act.id);else toast('لا لغز نشط حالياً');}}},{ic:'✓',n:'المهام',f:()=>{closeModal();openTasks();}},{ic:'🏠',n:'الخروج للقائمة (حفظ تلقائي)',f:()=>{closeModal();save();$('game').classList.add('hidden');$('start').classList.remove('hidden');refreshHome();}}].forEach(it=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">'+it.ic+'</div><div style="flex:1"><div class="evNm">'+it.n+'</div></div>';d.onclick=()=>{SFX.click();it.f();};g.appendChild(d);});b.appendChild(g);$('modal').classList.remove('hidden');}
+/* FINAL */
+function finalScene(){const ev=evCount();const canJ=ev>=18;const canT=(ev>=26)&&S.flags['pz_p_route'];const b=$('modalBox');b.innerHTML='';const t=document.createElement('div');t.className='padTitle';t.textContent='القرار الأخير';const q=document.createElement('div');q.className='padQ';q.textContent='نادر أمامك. الصندوق مفتوح.\n«الملف بين يديك. ماذا تفعل؟»';b.appendChild(t);b.appendChild(q);const g=document.createElement('div');g.className='evGrid';[{ic:'🤐',n:'أغلق الصندوق وأترك كل شيء',sub:'نهاية الصمت',ok:true,key:'B'},{ic:'⚖️',n:'أسلم الأدلة للجهات المختصة',sub:'نهاية العدالة — ١٨ دليلاً',ok:canJ,key:'A'},{ic:'🔥',n:'أكمل ما بدأته مريم مع نادر',sub:'نهاية الحقيقة — ٢٦ + الربط',ok:canT,key:'C'}].forEach(o=>{const d=document.createElement('div');d.className='evCard';if(!o.ok)d.style.opacity='0.4';d.innerHTML='<div class="evIc">'+o.ic+'</div><div style="flex:1"><div class="evNm">'+o.n+'</div><div class="evTp">'+(o.ok?'✓ '+o.sub:'🔒 '+o.sub)+'</div></div>';d.onclick=()=>{if(!o.ok){SFX.err();toast('تحتاج أدلة أكثر','bad');return;}SFX.click();closeModal();showEnding(o.key);};g.appendChild(d);});b.appendChild(g);$('modal').classList.remove('hidden');}
+const ENDINGS={A:{title:'نهاية العدالة',sub:'النهاية الأولى',text:'وضعت الصندوق على طاولة المركز مع السجل والدفتر والتسجيل.\nلم يكن سريعاً... لكن الملف ١٧/ب فُتح من جديد.\nسُئلت: لماذا احتفظت بالصندوق؟ قلت: لأن أحداً لم يفعل.'},B:{title:'نهاية الصمت',sub:'النهاية الثانية',text:'أغلقت الصندوق وأطفأت الضوء.\nسُجل كبريد مهمل ونُسي.\nوصلتك ورقة: اخترت السلامة. لا بأس.'},C:{title:'نهاية الحقيقة',sub:'النهاية الثالثة — الأفضل',text:'قلت: لن أخفيه ولن أُسلمه نصف ملف.\nثلاثة أسابيع مع نادر. نُشر التحقيق في أربع صفحات.\n«مريم لم تبحث عن مجرمين. بل عن شخص يسأل.»\nثم ترك لك الصندوق فارغاً إلا من الرقم.'}};
+function showEnding(key){const e=ENDINGS[key];if(!S.endings.includes(key))S.endings.push(key);S.ngUnlocked=true;S.started=false;if(key==='C')unlockAch('ach_secret');addXP(key==='C'?150:key==='A'?100:40,'نهاية: '+e.title);save();const w=document.createElement('div');w.className='endWrap';w.id='endWrap';const hintsUsed=Object.values(S.hints).reduce((a,b)=>a+b,0);const L=getLevel(S.xp);w.innerHTML='<div class="tag">'+e.sub+'</div><h2>'+e.title+'</h2><p>'+e.text.replace(/\n/g,'<br>')+'</p><div class="statRow"><div class="stat"><b>'+evCount()+'</b><span>دليل</span></div><div class="stat"><b>'+S.xp+'</b><span>XP</span></div><div class="stat"><b>'+L.name+'</b><span>المستوى</span></div><div class="stat"><b>'+hintsUsed+'</b><span>تلميحات</span></div></div>';const b1=document.createElement('button');b1.className='btn primary';b1.style.maxWidth='260px';b1.style.width='100%';b1.textContent='🎬 عرض التقرير السينمائي الكامل';b1.onclick=()=>{SFX.click();w.remove();showGrandReport(key);};w.appendChild(b1);const b2=document.createElement('button');b2.className='btn goldline';b2.style.maxWidth='260px';b2.style.width='100%';b2.style.marginTop='8px';b2.textContent='✨ تحقيق جديد+';b2.onclick=()=>{SFX.click();w.remove();newGamePlus();};w.appendChild(b2);const b3=document.createElement('button');b3.className='btn ghost';b3.style.maxWidth='260px';b3.style.width='100%';b3.style.marginTop='8px';b3.textContent='🏠 القائمة';b3.onclick=()=>{SFX.click();w.remove();$('game').classList.add('hidden');$('start').classList.remove('hidden');refreshHome();};w.appendChild(b3);document.querySelector('.frame').appendChild(w);tone(220,2,'sine',0.12);}
+/* CHAPTER COMPLETE */
+function showChapterComplete(st,cb){const o=$('chapterDone');o.classList.remove('hidden');$('cdTitle').textContent='✓ الفصل '+toAr(st.id)+' مكتمل';$('cdSub').textContent=st.title+' • +'+S.chapterXP+' XP';const totalEv=st.hotspots.filter(h=>h.act.ev).length;const foundEv=st.hotspots.filter(h=>h.act.ev&&S.ev[h.act.ev]).length;const missed=totalEv-foundEv;const secrets=st.hotspots.filter(h=>!h.req&&h.act.ev&&S.ev[h.act.ev]).length;const puzzles=st.hotspots.filter(h=>h.act.t==='puzzle');const solved=puzzles.filter(h=>S.flags['pz_'+h.act.id]).length;const hints=S.hints[st.id]||0;$('cdGrid').innerHTML='<div class="doneCard"><b>'+foundEv+'/'+totalEv+'</b><span>🔍 أدلة مكتشفة</span></div><div class="doneCard"><b>'+missed+'</b><span>❌ أدلة فائتة</span></div><div class="doneCard"><b>'+secrets+'</b><span>🗝 أسرار</span></div><div class="doneCard"><b>'+solved+'/'+puzzles.length+'</b><span>🧩 ألغاز</span></div><div class="doneCard"><b>'+hints+'</b><span>💡 تلميحات</span></div><div class="doneCard"><b>+'+S.chapterXP+'</b><span>⭐ XP المكتسب</span></div>';$('cdXp').textContent=missed>0?'فاتك '+missed+' دليل. يمكنك العودة عبر اختيار الفصل.':'ممتاز! اكتشفت كل أدلة هذا الفصل. +مكافأة';if(missed===0)addXP(20,'فصل كامل بدون فائت');$('cdNext').onclick=()=>{SFX.click();o.classList.add('hidden');S.chapterXP=0;save();cb&&cb();};}
+/* GRAND REPORT */
+function showGrandReport(key){const g=$('grandWrap');g.classList.remove('hidden');const e=ENDINGS[key];$('grandEndName').textContent=e.title+' • '+e.sub;const L=getLevel(S.xp);const solved=Object.keys(S.flags).filter(k=>k.startsWith('pz_')).length;const achN=Object.keys(S.ach).length;const sideN=Object.keys(S.sideDone).length;$('grandStory').textContent='بعد '+evCount()+' دليلاً و'+solved+' ألغاز، أُغلق الملف ١٧. '+(key==='C'?'الحقيقة نُشرت كاملة.':key==='A'?'العدالة أخذت مجراها.':'الصمت اختارك هذه المرة.');$('grandGrid').innerHTML='<div class="doneCard"><b>'+evCount()+'</b><span>📦 أدلة</span></div><div class="doneCard"><b>'+solved+'/10</b><span>🧩 ألغاز</span></div><div class="doneCard"><b>'+S.secrets+'</b><span>🗝 أسرار</span></div><div class="doneCard"><b>'+S.xp+'</b><span>⭐ XP</span></div><div class="doneCard"><b>'+L.name+'</b><span>🎖 مستوى</span></div><div class="doneCard"><b>'+achN+'/10</b><span>🏆 إنجازات</span></div><div class="doneCard"><b>'+sideN+'/5</b><span>🧭 جانبية</span></div><div class="doneCard"><b>'+S.endings.length+'/3</b><span>🎬 نهايات</span></div>';$('grandHome').onclick=()=>{SFX.click();g.classList.add('hidden');$('game').classList.add('hidden');$('start').classList.remove('hidden');refreshHome();};$('grandNG').onclick=()=>{SFX.click();g.classList.add('hidden');newGamePlus();};}
+/* HOME PAGES */
+function openAchievements(){const b=$('sheetBox');b.innerHTML='';b.innerHTML='<div class="mTitle">🏆 الإنجازات ('+Object.keys(S.ach).length+'/10)</div><div class="mType">إنجازات المحقق</div>';const g=document.createElement('div');g.className='achGrid';Object.keys(ACH).forEach(id=>{const a=ACH[id],un=!!S.ach[id];const d=document.createElement('div');d.className='achCard'+(un?' unlocked':'');d.style.opacity=un?'1':'0.55';d.innerHTML='<div class="aic">'+(un?a.ic:'🔒')+'</div><div class="an">'+a.n+'</div><div class="ad">'+(un?a.d:'مغلق: '+a.d)+'</div>';g.appendChild(d);});b.appendChild(g);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+function openStats(){const b=$('sheetBox');b.innerHTML='';const L=getLevel(S.xp);const solved=Object.keys(S.flags).filter(k=>k.startsWith('pz_')).length;b.innerHTML='<div class="mTitle">📊 الإحصائيات</div><div class="mType">'+L.name+' • '+S.xp+' XP ('+L.pct+'% للمستوى التالي)</div>';const g=document.createElement('div');g.className='doneGrid';g.style.maxWidth='100%';g.innerHTML='<div class="doneCard"><b>'+evCount()+'</b><span>أدلة</span></div><div class="doneCard"><b>'+solved+'</b><span>ألغاز محلولة</span></div><div class="doneCard"><b>'+S.secrets+'</b><span>أسرار</span></div><div class="doneCard"><b>'+S.optSeen+'</b><span>نقاط اختيارية</span></div><div class="doneCard"><b>'+Object.keys(S.ach).length+'</b><span>إنجازات</span></div><div class="doneCard"><b>'+Object.keys(S.sideDone).length+'/5</b><span>جانبية</span></div><div class="doneCard"><b>'+S.dialogues+'</b><span>استجوابات</span></div><div class="doneCard"><b>'+S.endings.length+'/3</b><span>نهايات</span></div>';b.appendChild(g);const mins=Math.round((S.playTime||0)/60000);const p=document.createElement('div');p.className='mText';p.style.textAlign='center';p.textContent='الفصل الحالي: '+S.stage+' • نقاط التلميح: '+S.hintTokens+' • وقت اللعب التقريبي: '+mins+' دقيقة';b.appendChild(p);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+function openSideMissions(){const b=$('sheetBox');b.innerHTML='<div class="mTitle">🧭 المهمات الجانبية (اختيارية)</div><div class="mType">لا تؤثر على القصة الأساسية • تمنح XP</div>';const g=document.createElement('div');g.className='evGrid';Object.keys(SIDE).forEach(id=>{const s=SIDE[id],pr=S.side[id]||0,dn=!!S.sideDone[id];const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">'+s.ic+'</div><div style="flex:1"><div class="evNm">'+(dn?'✅ ':'')+s.n+' ('+pr+'/'+s.need+')</div><div class="evTp">'+s.d+'</div><div class="xpbar" style="margin-top:6px"><div class="xpfill" style="width:'+(pr/s.need*100)+'%"></div></div></div>';g.appendChild(d);});b.appendChild(g);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+let codexTab='الشخصيات';
+function openCodex(){renderCodex();$('sheet').classList.remove('hidden');}
+function renderCodex(){const b=$('sheetBox');b.innerHTML='<div class="mTitle">📚 ملف القضية (Codex)</div><div class="mType">الشخصيات • الأماكن • الأدلة • الأحداث • المصطلحات</div>';const tabs=document.createElement('div');tabs.className='tabs';['الشخصيات','الأماكن','الأدلة','الأحداث','المصطلحات'].forEach(t=>{const btn=document.createElement('button');btn.className='tab'+(codexTab===t?' on':'');btn.textContent=t;btn.onclick=()=>{SFX.click();codexTab=t;renderCodex();};tabs.appendChild(btn);});b.appendChild(tabs);const g=document.createElement('div');g.className='evGrid';if(codexTab==='الشخصيات'){['e_samer','e_maryam','e_najib','e_fadi','e_nader'].forEach(id=>{const un=!!S.ev[id];const d=document.createElement('div');d.className='evCard';d.style.opacity=un?'1':'0.5';d.innerHTML='<div class="evIc">'+(un?EV[id].ic:'❓')+'</div><div style="flex:1"><div class="evNm">'+(un?EV[id].n:'شخصية مجهولة')+'</div><div class="evTp">'+(un?EV[id].d:'اكتشفها في القصة لفتح ملفها')+'</div></div>';g.appendChild(d);});}else if(codexTab==='الأماكن'){PLACES.forEach(p=>{const un=S.maxStage>=p.s||S.stageDone[p.s];const d=document.createElement('div');d.className='evCard';d.style.opacity=un?'1':'0.5';d.innerHTML='<div class="evIc">📍</div><div style="flex:1"><div class="evNm">'+(un?p.n:'مكان مغلق')+'</div><div class="evTp">'+(un?p.d:'يُفتح في الفصل '+p.s)+'</div></div>';g.appendChild(d);});}else if(codexTab==='الأدلة'){const ids=Object.keys(S.ev);if(!ids.length)g.innerHTML='<div class="empty">لا أدلة بعد.</div>';ids.forEach(id=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">'+EV[id].ic+'</div><div style="flex:1"><div class="evNm">'+EV[id].n+'</div><div class="evTp">'+EV[id].t+'</div></div>';d.onclick=()=>{SFX.click();closeSheet();openSheetDoc(EV[id].n,EV[id].d,id);};g.appendChild(d);});}else if(codexTab==='الأحداث'){EVENTS.forEach(e=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">🕰</div><div style="flex:1"><div class="evNm">'+e.n+'</div><div class="evTp">'+e.d+'</div></div>';g.appendChild(d);});}else{TERMS.forEach(e=>{const d=document.createElement('div');d.className='evCard';d.innerHTML='<div class="evIc">📖</div><div style="flex:1"><div class="evNm">'+e.n+'</div><div class="evTp">'+e.d+'</div></div>';g.appendChild(d);});}b.appendChild(g);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);}
+function openChapterSelect(){const b=$('sheetBox');b.innerHTML='<div class="mTitle">🗂 اختيار الفصل</div><div class="mType">الفصول المفتوحة حتى '+toAr(S.maxStage)+'</div>';const g=document.createElement('div');g.className='evGrid';STAGES.forEach(st=>{const un=st.id<=S.maxStage;const done=!!S.stageDone[st.id];const d=document.createElement('div');d.className='evCard';d.style.opacity=un?'1':'0.4';d.innerHTML='<div class="evIc">'+(done?'✅':un?'📂':'🔒')+'</div><div style="flex:1"><div class="evNm">'+toAr(st.id)+' — '+st.title+'</div><div class="evTp">'+st.place+'</div></div>';if(un)d.onclick=()=>{SFX.click();closeSheet();showLoading(st.place,()=>{S.stage=st.id;S.chapterXP=0;save();$('start').classList.add('hidden');$('game').classList.remove('hidden');cine(st.intro,()=>{renderStage();});});};else d.onclick=()=>toast('هذا الفصل مغلق بعد','bad');g.appendChild(d);});b.appendChild(g);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+function openSettings(){const b=$('sheetBox');b.innerHTML='<div class="mTitle">⚙ الإعدادات</div><div class="mType">الصوت • النص • الأداء • الوصول</div>';const st=S.settings;function slider(lbl,key){const r=document.createElement('div');r.className='setRow';r.innerHTML='<label><span>'+lbl+'</span><span>'+st[key]+'%</span></label>';const inp=document.createElement('input');inp.type='range';inp.min='0';inp.max='100';inp.value=st[key];inp.oninput=()=>{st[key]=+inp.value;r.querySelector('span:last-child').textContent=st[key]+'%';applyVolumes();save();};r.appendChild(inp);return r;}b.appendChild(slider('🎵 Music Volume','musicVol'));b.appendChild(slider('🔊 SFX Volume','sfxVol'));b.appendChild(slider('🎙 Voice Volume','voiceVol'));const ts=document.createElement('div');ts.className='setRow';ts.innerHTML='<label><span>⏩ Text Speed (سرعة النص)</span><span>'+st.textSpeed+'x</span></label>';const seg=document.createElement('div');seg.className='seg';[['بطيء',0.7],['عادي',1],['سريع',1.6]].forEach(([n,v])=>{const btn=document.createElement('button');btn.textContent=n;if(st.textSpeed===v)btn.classList.add('on');btn.onclick=()=>{SFX.click();st.textSpeed=v;save();openSettings();};seg.appendChild(btn);});ts.appendChild(seg);b.appendChild(ts);function tgl(lbl,key){const r=document.createElement('div');r.className='tglRow';r.innerHTML='<span>'+lbl+'</span>';const t=document.createElement('div');t.className='tgl'+(st[key]?' on':'');t.onclick=()=>{SFX.click();st[key]=!st[key];save();applySettings();openSettings();};r.appendChild(t);return r;}b.appendChild(tgl('📳 Vibration (الاهتزاز)','vibration'));b.appendChild(tgl('🔔 Notifications (الإشعارات)','notifications'));b.appendChild(tgl('◐ تباين عالٍ (وصول)','highContrast'));const q=document.createElement('div');q.className='setRow';q.innerHTML='<label><span>⚡ Quality (الجودة)</span><span></span></label>';const qs=document.createElement('div');qs.className='seg';[['Low','low'],['Medium','medium'],['High','high']].forEach(([n,v])=>{const btn=document.createElement('button');btn.textContent=n;if(st.quality===v)btn.classList.add('on');btn.onclick=()=>{SFX.click();st.quality=v;save();applySettings();openSettings();};qs.appendChild(btn);});q.appendChild(qs);b.appendChild(q);const tz=document.createElement('div');tz.className='setRow';tz.innerHTML='<label><span>🔠 حجم النص</span><span></span></label>';const tzs=document.createElement('div');tzs.className='seg';[['صغير','small'],['متوسط','medium'],['كبير','large']].forEach(([n,v])=>{const btn=document.createElement('button');btn.textContent=n;if(st.textSize===v)btn.classList.add('on');btn.onclick=()=>{SFX.click();st.textSize=v;save();applySettings();openSettings();};tzs.appendChild(btn);});tz.appendChild(tzs);b.appendChild(tz);const snd=document.createElement('button');snd.className='closeBtn gold';snd.textContent=musicOn?'🔊 الصوت يعمل — اضغط للإيقاف':'🔇 الصوت متوقف — اضغط للتشغيل';snd.onclick=()=>{toggleSound();openSettings();};b.appendChild(snd);const cl=document.createElement('button');cl.className='closeBtn';cl.textContent='إغلاق ✓';cl.onclick=()=>{SFX.click();closeSheet();};b.appendChild(cl);$('sheet').classList.remove('hidden');}
+function applySettings(){if(!S)return;const f=$('frame');f.classList.remove('q-low','q-medium','q-high','hc','ts-small','ts-medium','ts-large');f.classList.add('q-'+S.settings.quality,'ts-'+S.settings.textSize);if(S.settings.highContrast)f.classList.add('hc');applyVolumes();}
+/* INTRO */
+function playIntro(cb){const w=$('introCine');w.classList.remove('hidden');const scenes=['is1','is2','is3','is4','is5'];let i=0;const fill=$('introFill');scenes.forEach(id=>$(id).classList.remove('on'));$(scenes[0]).classList.add('on');SFX.dark();const total=19000,step=total/5;const start=Date.now();const iv=setInterval(()=>{const el=Date.now()-start;fill.style.width=Math.min(100,el/total*100)+'%';const ni=Math.min(4,Math.floor(el/step));if(ni!==i){i=ni;scenes.forEach(id=>$(id).classList.remove('on'));$(scenes[i]).classList.add('on');SFX.click();if(i===4)tone(440,2,'sine',0.1);}if(el>=total){clearInterval(iv);w.classList.add('hidden');cb&&cb();}},100);$('introSkip').onclick=()=>{clearInterval(iv);w.classList.add('hidden');SFX.click();cb&&cb();};}
+/* FLOW */
+function refreshHome(){updateBadges();const has=hasSave();$('btnCont').disabled=!has;$('btnCont').textContent=has?'⏵ متابعة التحقيق (الفصل '+toAr((loadSave()||{}).stage||1)+')':'⏵ متابعة التحقيق (لا يوجد حفظ)';const ng=S&&S.ngUnlocked;$('btnNGPlus').classList.toggle('hidden',!has&&!ng);} 
+function newGame(){const keep=S?{ach:S.ach,endings:S.endings,ngUnlocked:S.ngUnlocked,settings:S.settings}:null;S=freshState();if(keep){S.ach=keep.ach;S.endings=keep.endings;S.ngUnlocked=keep.ngUnlocked;S.settings=keep.settings;}S.started=true;S._t=Date.now();save();applySettings();unlockAch('ach_start');$('start').classList.add('hidden');document.querySelectorAll('.endWrap').forEach(e=>e.remove());playIntro(()=>{$('game').classList.remove('hidden');const st=stageData(1);showLoading(st.place,()=>{cine(st.intro,()=>{renderStage();save();});});});}
+function newGamePlus(){const keep={ach:S.ach,endings:S.endings,settings:S.settings,xp:S.xp};S=freshState();S.ach=keep.ach;S.endings=keep.endings;S.settings=keep.settings;S.xp=keep.xp;S.ngPlusActive=true;S.ngUnlocked=true;S.started=true;S.hintTokens=15;S._t=Date.now();save();applySettings();notify('✨ تحقيق جديد+','أدلة وحوارات وأسرار إضافية','✨');$('start').classList.add('hidden');$('game').classList.remove('hidden');document.querySelectorAll('.endWrap').forEach(e=>e.remove());const st=stageData(1);showLoading(st.place+' +',()=>{cine(['هذه المرة... تتذكر الطريق.','لكن التفاصيل التي غابت عنك ستظهر.','✨ تحقيق جديد+: ابحث عن علامات ✨'],()=>{renderStage();});});}
+function continueGame(){const s=loadSave();if(!s||!s.started){toast('لا يوجد حفظ','bad');return;}S=s;if(!S.settings)S.settings=defSettings();if(S.hintTokens===undefined)S.hintTokens=12;S._t=Date.now();applySettings();$('start').classList.add('hidden');document.querySelectorAll('.endWrap').forEach(e=>e.remove());$('game').classList.remove('hidden');if(S.sound){musicOn=false;toggleSound();}renderStage();toast('تم تحميل التحقيق ✓','good');}
+function toggleSound(){musicOn=!musicOn;if(S)S.sound=musicOn;if(musicOn){audioInit();if(AC&&AC.state==='suspended')AC.resume();startAmbient();}applyVolumes();const ic=$('hSound')?$('hSound').querySelector('.ic'):null;if(ic)ic.textContent=musicOn?'🔊':'🔇';save();}
+/* TORCH */
+function initTorch(){const sc=$('scene'),t=$('torch');function move(x,y){const r=sc.getBoundingClientRect();t.style.left=(x-r.left)+'px';t.style.top=(y-r.top)+'px';document.querySelectorAll('.hs.hiddenone').forEach(el=>{const er=el.getBoundingClientRect();const d=Math.hypot(er.left+er.width/2-x,er.top+er.height/2-y);el.classList.toggle('lit',d<120);});}sc.addEventListener('pointermove',e=>{if(sc.classList.contains('darkmode'))move(e.clientX,e.clientY);});sc.addEventListener('pointerdown',e=>{if(sc.classList.contains('darkmode'))move(e.clientX,e.clientY);});}
+/* BIND */
+$('btnNew').onclick=()=>{SFX.click();newGame();};$('btnCont').onclick=()=>{SFX.click();continueGame();};$('btnNGPlus').onclick=()=>{SFX.click();newGamePlus();};
+$('btnChapters').onclick=()=>{SFX.click();openChapterSelect();};$('btnFileHome').onclick=()=>{SFX.click();openFile(false);};
+$('btnCodex').onclick=()=>{SFX.click();openCodex();};$('btnSide').onclick=()=>{SFX.click();openSideMissions();};
+$('btnAch').onclick=()=>{SFX.click();openAchievements();};$('btnStats').onclick=()=>{SFX.click();openStats();};
+$('btnSettings').onclick=()=>{SFX.click();openSettings();};
+$('hFile').onclick=()=>{SFX.click();openFile(false);};$('hTasks').onclick=()=>{SFX.click();openTasks();};
+$('hHint').onclick=()=>{useHint();};$('hNotes').onclick=()=>{SFX.click();openNotes();};
+$('hSound').onclick=()=>{toggleSound();};$('btnMenu').onclick=()=>{SFX.click();openPause();};
+(function init(){S=freshState();const sv=loadSave();if(sv&&sv.settings)S.settings=sv.settings;if(sv&&sv.ach){S.ach=sv.ach;S.endings=sv.endings||[];S.ngUnlocked=sv.ngUnlocked||sv.endings?.length>0;}try{const d=$('dust');for(let i=0;i<14;i++){const s=document.createElement('i');s.style.left=Math.random()*100+'%';s.style.animationDelay=(Math.random()*9)+'s';s.style.animationDuration=(6+Math.random()*7)+'s';d.appendChild(s);}}catch(e){}initTorch();applySettings();refreshHome();updateBadges();document.addEventListener('pointerdown',function once(){if(!AC)audioInit();},{once:false});setInterval(()=>{if(S&&S.started)save();},30000);window.addEventListener('error',e=>{try{save();}catch(_){}});})();
 </script>
 </body>
 </html>
