@@ -1,0 +1,1874 @@
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>كِشك - لعبة إدارة الكشك المصري</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+  .font-brand { font-family: 'Changa', 'Cairo', sans-serif; }
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #1a1512; color: #fff; }
+  #game-app { position: relative; width: 100%; max-width: 480px; height: 100%; margin: 0 auto; background: linear-gradient(180deg, #2b1f1d 0%, #15100e 100%); display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow: hidden; }
+  .awning { background: repeating-linear-gradient(90deg, #d32f2f, #d32f2f 20px, #ffffff 20px, #ffffff 40px); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 4px; }
+  @keyframes floatPulse { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-4px) scale(1.02); } }
+  .animate-float { animation: floatPulse 2.5s infinite ease-in-out; }
+  @keyframes popIn { 0% { transform: scale(0.7); opacity: 0; } 80% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+  .pop-in { animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+  .coin-effect { position: absolute; font-weight: 900; color: #facc15; text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 12px rgba(250,204,21,0.6); animation: coinFly 1.25s ease-out forwards; pointer-events: none; z-index: 100; font-size: 1.15rem; white-space: nowrap; }
+  @keyframes coinFly { 0% { transform: translate(-50%,0) scale(0.7); opacity: 0; } 20% { transform: translate(-50%,-16px) scale(1.25); opacity: 1; } 100% { transform: translate(-50%,-72px) scale(1); opacity: 0; } }
+  .btn-3d { transition: all 0.1s ease; box-shadow: 0 5px 0 rgba(0,0,0,0.35); }
+  .btn-3d:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+  /* ---------- JOYSTICK ---------- */
+  #joystick-base { position: absolute; bottom: 12px; left: 12px; width: 118px; height: 118px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 45%, rgba(251,191,36,0.16) 0%, rgba(20,14,10,0.55) 72%);
+    border: 2px solid rgba(251,191,36,0.5); touch-action: none; z-index: 26;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.55), inset 0 0 22px rgba(251,191,36,0.10); }
+  #joystick-base::after { content: ''; position: absolute; inset: 14px; border-radius: 50%; border: 1px dashed rgba(251,191,36,0.18); }
+  #joystick-knob { width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #fef9c3, #f59e0b 55%, #b45309 100%);
+    border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 5px 12px rgba(0,0,0,0.6), inset 0 -3px 6px rgba(0,0,0,0.25);
+    position: relative; z-index: 2; pointer-events: none; will-change: transform; }
+  /* ---------- INTERACTION PANEL ---------- */
+  #interact-panel { position: absolute; bottom: 14px; right: 12px; z-index: 26; display: flex; flex-direction: column-reverse; gap: 8px; align-items: stretch; max-width: 42%; }
+  .interact-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 12px; border-radius: 14px;
+    font-weight: 800; font-size: 12.5px; border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 5px 0 rgba(0,0,0,0.4);
+    transition: transform 0.08s ease, box-shadow 0.08s ease; line-height: 1.15; }
+  .interact-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+  .interact-btn .cnt { background: rgba(0,0,0,0.35); border-radius: 8px; padding: 1px 6px; font-size: 11px; }
+  /* ---------- CARRY TRAY ---------- */
+  #carry-tray { position: absolute; top: 10px; left: 10px; z-index: 24; display: flex; gap: 6px; align-items: center;
+    background: rgba(12,9,7,0.72); border: 1.5px solid rgba(251,191,36,0.45); border-radius: 14px; padding: 5px 8px; backdrop-filter: blur(4px); }
+  .carry-slot { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1.5px dashed rgba(251,191,36,0.35);
+    display: flex; align-items: center; justify-content: center; font-size: 19px; }
+  .carry-slot.filled { border-style: solid; border-color: rgba(251,191,36,0.85); background: rgba(251,191,36,0.14); animation: popIn 0.25s; }
+  /* ---------- MISC ---------- */
+  .toast-float { position: absolute; transform: translate(-50%,-50%); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
+    background: rgba(0,0,0,0.82); border: 1px solid rgba(251,191,36,0.6); white-space: nowrap; z-index: 90; pointer-events: none; }
+  @keyframes popFade { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.7); } 25% { opacity: 1; transform: translate(-50%,-50%) scale(1.06); } 100% { opacity: 0; transform: translate(-50%,-110%) scale(0.95); } }
+  .toast-float { animation: popFade 1.5s ease-out forwards; }
+  @keyframes moneyPop { 0% { transform: scale(1); } 40% { transform: scale(1.28); color: #fde047; } 100% { transform: scale(1); } }
+  .money-pop { animation: moneyPop 0.45s ease; }
+  .event-shake { animation: evShake 0.5s ease; }
+  @keyframes evShake { 0%,100% { transform: translateX(-50%); } 25% { transform: translateX(-50%) rotate(-2deg); } 75% { transform: translateX(-50%) rotate(2deg); } }
+  #game-view { touch-action: none; }
+  canvas { display: block; touch-action: none; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body class="flex items-center justify-center bg-zinc-950">
+<div id="game-app">
+
+  <!-- ==================== HEADER ==================== -->
+  <header id="top-bar" class="w-full bg-stone-900/90 border-b-2 border-amber-600/40 p-2 z-20 flex justify-between items-center backdrop-blur shadow-md">
+    <div class="flex items-center space-x-2 space-x-reverse">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-stone-900 font-bold text-lg shadow-inner">
+        <i class="fa-solid fa-shop"></i>
+      </div>
+      <div class="text-right">
+        <div id="stage-name-badge" class="text-xs font-bold text-amber-400 truncate max-w-[110px]">كشك الحارة</div>
+        <div class="text-[10px] text-stone-400 font-semibold flex items-center gap-1 flex-wrap">
+          <span>مستوى <span id="kiosk-level" class="text-amber-300">★</span></span>
+          <span class="text-amber-500">•</span>
+          <span>يوم <span id="day-counter">1</span></span>
+          <span class="text-amber-500">•</span>
+          <span class="text-yellow-400"><i class="fa-solid fa-star text-[9px]"></i> <span id="rep-rating">4.8</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col items-center">
+      <div class="text-[10px] text-amber-200 uppercase font-bold tracking-wider">وقت اليوم</div>
+      <div class="w-20 bg-stone-800 h-2.5 rounded-full overflow-hidden border border-stone-700 mt-0.5">
+        <div id="day-progress-bar" class="h-full bg-gradient-to-r from-yellow-500 to-amber-500 w-full transition-all duration-300"></div>
+      </div>
+    </div>
+    <div class="flex items-center bg-stone-950/80 border border-amber-500/40 rounded-full px-3 py-1 shadow-inner">
+      <span class="text-yellow-400 font-black text-sm ml-1.5">ج.م</span>
+      <span id="player-money" class="font-brand font-black text-emerald-400 text-lg tracking-wide">500</span>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CANVAS ==================== -->
+  <div id="game-view" class="relative flex-1 w-full overflow-hidden bg-stone-800">
+    <div class="awning w-full h-4 border-b-2 border-stone-900 shadow"></div>
+
+    <div id="event-toast" class="hidden absolute top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-amber-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg z-30 flex items-center gap-2 border border-yellow-300">
+      <i class="fa-solid fa-bolt text-yellow-300"></i>
+      <span id="event-toast-text">حدث خاص!</span>
+    </div>
+
+    <canvas id="kiosk-canvas" class="w-full h-full block touch-none"></canvas>
+
+    <!-- Carry tray -->
+    <div id="carry-tray">
+      <span class="text-[10px] font-bold text-amber-300 ml-0.5">يدك</span>
+      <div class="carry-slot" id="slot-0"></div>
+      <div class="carry-slot" id="slot-1"></div>
+      <div class="carry-slot" id="slot-2"></div>
+    </div>
+
+    <!-- Hint -->
+    <div id="quick-hint" class="absolute top-2 right-2 bg-black/60 text-stone-300 text-[10px] px-2.5 py-1 rounded-lg border border-stone-700 pointer-events-none max-w-[46%] leading-tight">
+      <i class="fa-solid fa-hand-pointer text-amber-400 ml-1"></i> حرّك بالجويستيك • اقترب واضغط «تفاعل»
+    </div>
+
+    <!-- Joystick -->
+    <div id="joystick-base"><div id="joystick-knob"></div></div>
+
+    <!-- Interaction panel -->
+    <div id="interact-panel" class="hidden"></div>
+  </div>
+
+  <!-- ==================== BOTTOM HUD ==================== -->
+  <nav class="w-full bg-stone-950 border-t-2 border-stone-800 p-2 z-20 flex justify-around items-center">
+    <button onclick="openModal('inventory-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <i class="fa-solid fa-boxes-stacked text-amber-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">المخزن</span>
+    </button>
+    <button onclick="openModal('upgrades-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <i class="fa-solid fa-arrow-up-right-dots text-emerald-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">التطوير</span>
+    </button>
+    <button onclick="openModal('stages-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <i class="fa-solid fa-map-location-dot text-cyan-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">المراحل</span>
+    </button>
+    <button onclick="openModal('quests-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <div class="relative">
+        <i class="fa-solid fa-clipboard-check text-purple-400 text-lg"></i>
+        <span id="quest-alert-badge" class="hidden absolute -top-1 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+      </div>
+      <span class="text-[10px] font-bold text-stone-200 mt-0.5">المهام</span>
+    </button>
+    <button onclick="openModal('achievements-modal')" class="btn-3d flex flex-col items-center justify-center w-14 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <i class="fa-solid fa-trophy text-yellow-400 text-lg"></i><span class="text-[10px] font-bold text-stone-200 mt-0.5">الإنجازات</span>
+    </button>
+    <button onclick="openModal('settings-modal')" class="btn-3d flex flex-col items-center justify-center w-11 h-14 bg-gradient-to-b from-stone-800 to-stone-900 rounded-xl border border-stone-700">
+      <i class="fa-solid fa-gear text-stone-400 text-lg"></i><span class="text-[10px] font-bold text-stone-300 mt-0.5">ضبط</span>
+    </button>
+  </nav>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- START -->
+  <div id="start-menu-modal" class="absolute inset-0 bg-stone-950/95 z-50 flex flex-col items-center justify-between p-6 text-center">
+    <div class="w-full pt-8 flex flex-col items-center">
+      <div class="awning w-48 h-6 rounded-t-lg shadow-lg"></div>
+      <div class="bg-gradient-to-b from-amber-600 to-yellow-600 px-8 py-3 rounded-b-2xl border-2 border-yellow-300 shadow-2xl flex flex-col items-center">
+        <h1 class="font-brand text-5xl font-black text-stone-950 tracking-wider">كِـشْـكْ</h1>
+        <span class="text-xs font-bold text-stone-900 bg-yellow-300 px-3 py-0.5 rounded-full mt-1">نسخة الأندرويد الأصلية</span>
+      </div>
+      <p class="text-amber-200 font-semibold text-sm mt-4 px-4 leading-relaxed">"ابدأ بكشك صغير في الحارة... وابنِ إمبراطوريتك التجارية!"</p>
+    </div>
+    <div class="my-auto flex flex-col items-center animate-float">
+      <div class="w-28 h-28 bg-stone-800 border-4 border-amber-500 rounded-full flex items-center justify-center text-5xl shadow-2xl shadow-amber-500/20">🏪</div>
+      <div class="flex gap-2 mt-4 text-xs font-bold text-stone-400">
+        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🥤 مشروبات</span>
+        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🍫 حلويات</span>
+        <span class="bg-stone-900 px-2.5 py-1 rounded-md border border-stone-800">🍦 مثلجات</span>
+      </div>
+    </div>
+    <div class="w-full space-y-3 pb-6">
+      <button onclick="startGame()" class="btn-3d w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950 font-brand font-black text-2xl rounded-2xl shadow-xl flex items-center justify-center gap-2 border-2 border-yellow-200">
+        <i class="fa-solid fa-play text-xl"></i><span>ابدأ اللعب الآن</span>
+      </button>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="openModal('upgrades-modal')" class="btn-3d py-3 bg-stone-800 border border-stone-700 text-amber-300 font-bold rounded-xl text-sm">
+          <i class="fa-solid fa-arrow-up-right-dots ml-1"></i> التطويرات
+        </button>
+        <button onclick="openModal('settings-modal')" class="btn-3d py-3 bg-stone-800 border border-stone-700 text-stone-300 font-bold rounded-xl text-sm">
+          <i class="fa-solid fa-gear ml-1"></i> الإعدادات
+        </button>
+      </div>
+      <div class="text-[11px] text-stone-500 pt-1">حفظ تلقائي على ذاكرة الهاتف • تعمل بدون إنترنت</div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="inventory-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked text-amber-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">شراء البضاعة / المخزن</h2>
+      </div>
+      <button onclick="closeModal('inventory-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div id="inventory-list" class="flex-1 overflow-y-auto py-3 space-y-2.5"></div>
+    <div class="pt-2 border-t border-stone-800 grid grid-cols-2 gap-2">
+      <button onclick="buyAllStock()" class="btn-3d py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+        <i class="fa-solid fa-cart-flatbed"></i><span>تزويد كل النواقص</span>
+      </button>
+      <button onclick="restockRequested()" class="btn-3d py-3 bg-gradient-to-r from-amber-600 to-yellow-500 text-stone-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+        <i class="fa-solid fa-wand-magic-sparkles"></i><span>تزويد طلبات الزبائن</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- UPGRADES -->
+  <div id="upgrades-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-screwdriver-wrench text-emerald-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">تطوير وتجهيز الكشك</h2>
+      </div>
+      <button onclick="closeModal('upgrades-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div id="upgrades-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
+    <div class="pt-2 border-t border-stone-800 text-center text-xs text-stone-400">كل تطوير يزيد سرعة المبيعات وربحية الكشك</div>
+  </div>
+
+  <!-- STAGES -->
+  <div id="stages-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-map-location-dot text-cyan-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">مراحل التوسع والفروع</h2>
+      </div>
+      <button onclick="closeModal('stages-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div id="stages-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
+  </div>
+
+  <!-- QUESTS -->
+  <div id="quests-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-purple-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">المهام اليومية والمكافآت</h2>
+      </div>
+      <button onclick="closeModal('quests-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div id="quests-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div id="achievements-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-trophy text-yellow-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">سجل الإنجازات والبطولات</h2>
+      </div>
+      <button onclick="closeModal('achievements-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div id="achievements-list" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settings-modal" class="hidden absolute inset-0 bg-stone-950/90 z-40 p-4 flex flex-col justify-between backdrop-blur-sm">
+    <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-gear text-stone-400 text-xl"></i>
+        <h2 class="font-brand font-bold text-lg text-white">إعدادات اللعبة</h2>
+      </div>
+      <button onclick="closeModal('settings-modal')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-400 flex items-center justify-center text-lg">✕</button>
+    </div>
+    <div class="flex-1 py-4 space-y-4 overflow-y-auto">
+      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
+        <div>
+          <div class="font-bold text-white text-sm">المؤثرات الصوتية (SFX)</div>
+          <div class="text-[11px] text-stone-400">أصوات البيع، الزبائن، والنجاح</div>
+        </div>
+        <button id="sfx-toggle" onclick="toggleSFX()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
+          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
+        </button>
+      </div>
+      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
+        <div>
+          <div class="font-bold text-white text-sm">الموسيقى الهادئة</div>
+          <div class="text-[11px] text-stone-400">موسيقى كرتونية خفيفة في الخلفية</div>
+        </div>
+        <button id="music-toggle" onclick="toggleMusic()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
+          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
+        </button>
+      </div>
+      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 flex justify-between items-center">
+        <div>
+          <div class="font-bold text-white text-sm">الاهتزاز (Vibration)</div>
+          <div class="text-[11px] text-stone-400">اهتزاز خفيف عند البيع والتطوير</div>
+        </div>
+        <button id="vib-toggle" onclick="toggleVib()" class="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition">
+          <div class="w-4 h-4 bg-white rounded-full transition transform translate-x-0"></div>
+        </button>
+      </div>
+      <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 text-xs space-y-1.5 text-stone-300">
+        <div class="font-bold text-amber-400 mb-2">عن لعبة كشك:</div>
+        <p>• الجويستيك للحركة داخل الكشك، وأزرار التفاعل تظهر عند الاقتراب.</p>
+        <p>• خُذ المنتجات من الرفوف والثلاجة وسلّمها للزبائن على الكاونتر.</p>
+        <p>• يعمل المشروع دون الحاجة لاتصال بالإنترنت.</p>
+        <p>• جميع بياناتك محفوظة تلقائيًا في ذاكرة الجهاز.</p>
+      </div>
+      <div class="pt-2">
+        <button onclick="confirmResetData()" class="btn-3d w-full py-3 bg-red-950 border border-red-700 text-red-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation"></i><span>إعادة ضبط اللعبة ومسح التقدم</span>
+        </button>
+      </div>
+    </div>
+    <div class="text-center text-[10px] text-stone-500 pb-1">إصدار 2.0.0 (Android Native Hybrid Engine)</div>
+  </div>
+
+  <!-- DAY SUMMARY -->
+  <div id="day-summary-modal" class="hidden absolute inset-0 bg-stone-950/95 z-50 p-5 flex flex-col justify-between text-center pop-in">
+    <div class="pt-4">
+      <div class="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 border-2 border-amber-500 rounded-full flex items-center justify-center text-3xl mb-2">🌙</div>
+      <h2 class="font-brand font-black text-3xl text-yellow-400">انتهى اليوم!</h2>
+      <p class="text-xs text-stone-400 mt-1">تقرير أداء وحسابات اليوم <span id="summary-day-num" class="text-amber-300 font-bold">1</span></p>
+    </div>
+    <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 space-y-2.5 text-sm my-auto">
+      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
+        <span>إجمالي المبيعات:</span><span class="font-bold text-emerald-400">+<span id="sum-revenue">0</span> ج.م</span>
+      </div>
+      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
+        <span>تكلفة البضاعة المباعة:</span><span class="font-bold text-red-400">-<span id="sum-cost">0</span> ج.م</span>
+      </div>
+      <div class="flex justify-between text-white font-bold text-base bg-stone-800/60 p-2 rounded-xl">
+        <span>صافي الربح:</span><span class="text-yellow-400"><span id="sum-profit">0</span> ج.م</span>
+      </div>
+      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5 pt-1">
+        <span>عدد الزبائن المخدومين:</span><span class="font-bold text-cyan-300"><span id="sum-served">0</span> زبون</span>
+      </div>
+      <div class="flex justify-between text-stone-300 border-b border-stone-800 pb-1.5">
+        <span>زبائن غادروا غاضبين:</span><span class="font-bold text-red-400"><span id="sum-lost">0</span> زبون</span>
+      </div>
+      <div class="flex justify-between items-center pt-1">
+        <span class="text-stone-300">تقييم اليوم:</span><span id="sum-stars" class="text-yellow-400 text-lg tracking-widest">⭐⭐⭐⭐⭐</span>
+      </div>
+    </div>
+    <div class="pb-4">
+      <button onclick="startNextDay()" class="btn-3d w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950 font-brand font-black text-xl rounded-2xl shadow-xl flex items-center justify-center gap-2">
+        <i class="fa-solid fa-sun text-xl"></i><span>ابدأ يوم جديد الآن</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =============================================================
+   POLYFILL roundRect
+   ============================================================= */
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    if (!Array.isArray(r)) r = [0, 0, 0, 0];
+    const [tl, tr, br, bl] = r;
+    this.beginPath();
+    this.moveTo(x + tl, y);
+    this.lineTo(x + w - tr, y);
+    this.quadraticCurveTo(x + w, y, x + w, y + tr);
+    this.lineTo(x + w, y + h - br);
+    this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    this.lineTo(x + bl, y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - bl);
+    this.lineTo(x, y + tl);
+    this.quadraticCurveTo(x, y, x + tl, y);
+    this.closePath();
+    return this;
+  };
+}
+
+/* =============================================================
+   GAME DATA & CONFIGURATION
+   ============================================================= */
+const PRODUCTS = {
+  water:     { id:'water',     name:'مياه معدنية',  short:'مياه',    emoji:'💧', buy:3,  sell:7,  maxStock:25, station:'fridge',  unlockStage:0 },
+  juice:     { id:'juice',     name:'عصير علبة',     short:'عصير',    emoji:'🧃', buy:5,  sell:12, maxStock:20, station:'fridge',  unlockStage:0 },
+  soda:      { id:'soda',      name:'مشروب غازي',    short:'غازي',    emoji:'🥤', buy:7,  sell:15, maxStock:20, station:'fridge',  unlockStage:0 },
+  chips:     { id:'chips',     name:'شيبسي مصري',    short:'شيبسي',   emoji:'🥔', buy:4,  sell:10, maxStock:25, station:'shelf',   unlockStage:0 },
+  biscuit:   { id:'biscuit',   name:'بسكويت شاي',    short:'بسكويت',  emoji:'🍪', buy:3,  sell:8,  maxStock:25, station:'shelf',   unlockStage:0 },
+  chocolate: { id:'chocolate', name:'شوكولاتة',      short:'شوكولاتة',emoji:'🍫', buy:8,  sell:18, maxStock:20, station:'shelf',   unlockStage:1 },
+  icecream:  { id:'icecream',  name:'آيس كريم',      short:'آيس',     emoji:'🍦', buy:6,  sell:16, maxStock:15, station:'cooler',  unlockStage:1 }
+};
+
+const CUSTOMER_TYPES = [
+  { id:'student', name:'طالب مدرسة',   avatar:'👦', patience:24, items:['chips','juice','biscuit'],  walkSpeed:68, tipProb:0.10, payMul:1.0 },
+  { id:'worker',  name:'موظف حكومي',   avatar:'👨‍💼', patience:21, items:['water','soda','biscuit'], walkSpeed:56, tipProb:0.20, payMul:1.05 },
+  { id:'youth',   name:'شاب روش',      avatar:'🧑',  patience:19, items:['soda','chips','chocolate'],walkSpeed:76, tipProb:0.25, payMul:1.1 },
+  { id:'elder',   name:'عم صبحي',      avatar:'👴',  patience:30, items:['water','biscuit'],          walkSpeed:44, tipProb:0.15, payMul:1.0 },
+  { id:'kid',     name:'طفل مع والدته',avatar:'🧒',  patience:22, items:['icecream','chocolate','juice'], walkSpeed:62, tipProb:0.30, payMul:1.15 },
+  { id:'hurry',   name:'زبون مستعجل',  avatar:'🏃',  patience:13, items:['water','soda'],             walkSpeed:96, tipProb:0.40, payMul:1.2 },
+  { id:'vip',     name:'زبون VIP',     avatar:'🕴️', patience:26, items:['chocolate','icecream','juice'], walkSpeed:60, tipProb:0.75, payMul:2.4 }
+];
+
+const STAGES = [
+  { id:0, name:'كشك الحارة',          cost:0,     maxCustomers:2, mult:1.00, desc:'بداية بسيطة في حارة شعبية هادئة', reqServed:0 },
+  { id:1, name:'كشك الشارع',          cost:1500,  maxCustomers:3, mult:1.25, desc:'على ناصية شارع رئيسي مليان حركة', reqServed:25 },
+  { id:2, name:'الكشك المشهور',       cost:4000,  maxCustomers:4, mult:1.50, desc:'معروف في كل المنطقة وزباين طوابير', reqServed:80 },
+  { id:3, name:'كشك كبير',            cost:10000, maxCustomers:5, mult:2.00, desc:'كشك مودرن وثلاجات حديثة وبضاعة متنوعة', reqServed:180 },
+  { id:4, name:'إمبراطورية الأكشاك',  cost:25000, maxCustomers:6, mult:3.00, desc:'سلسلة أكشاك وأكبر مورد في المحافظة', reqServed:350 }
+];
+
+const UPGRADE_TYPES = {
+  speed:        { name:'سرعة حركة البائع',   icon:'fa-person-running',   baseCost:180, maxLevel:5, desc:'التحرك أسرع داخل الكشك' },
+  prepSpeed:    { name:'سرعة تجهيز الطلب',   icon:'fa-bolt',             baseCost:220, maxLevel:5, desc:'زيادة سعر البيع لكل منتج' },
+  fridgeCap:    { name:'حجم الثلاجة والرفوف',icon:'fa-cubes-stacked',    baseCost:260, maxLevel:5, desc:'زيادة السعة التخزينية للمنتجات' },
+  attraction:   { name:'ديكور وجذب الزبائن', icon:'fa-bullhorn',         baseCost:320, maxLevel:5, desc:'زيادة تدفق الزبائن ومستوى صبرهم' },
+  counterSpace: { name:'توسعة الكاونتر',     icon:'fa-cash-register',    baseCost:380, maxLevel:3, desc:'مساحة أكبر للبقشيش وخدمة أسرع' },
+  carryBag:     { name:'حقيبة التسوق',       icon:'fa-bag-shopping',     baseCost:500, maxLevel:2, desc:'حمل منتجات أكثر في المرة الواحدة' }
+};
+
+const INITIAL_QUESTS = [
+  { id:'q1', text:'بيع 5 منتجات للزبائن',            target:5,    current:0, reward:50,  type:'sell',       done:false, claimed:false },
+  { id:'q2', text:'خدمة 10 زبائن بنجاح',             target:10,   current:0, reward:100, type:'serve',      done:false, claimed:false },
+  { id:'q3', text:'تحقيق مبيعات بقيمة 200 ج.م',      target:200,  current:0, reward:80,  type:'money',      done:false, claimed:false },
+  { id:'q4', text:'شراء وتطوير أول ترقية للكشك',     target:1,    current:0, reward:75,  type:'upgrade',    done:false, claimed:false },
+  { id:'q5', text:'إنهاء يوم بدون خسارة أي زبون',    target:1,    current:0, reward:120, type:'perfectDay', done:false, claimed:false }
+];
+
+const INITIAL_ACHIEVEMENTS = [
+  { id:'a1', title:'أول بيعة مصري',   desc:'أول عملية بيع ناجحة في الكشك',              target:1,    current:0,   reward:30,  done:false, claimed:false },
+  { id:'a2', title:'صاحب محل شاطر',   desc:'اجمع أول 1,000 جنيه رصيد',                  target:1000, current:500, reward:150, done:false, claimed:false },
+  { id:'a3', title:'محبوب الجماهير',  desc:'خدمة 50 زبون مختلف',                        target:50,   current:0,   reward:250, done:false, claimed:false },
+  { id:'a4', title:'توسعة النشاط',    desc:'فتح المرحلة الثانية (كشك الشارع)',          target:1,    current:0,   reward:300, done:false, claimed:false },
+  { id:'a5', title:'تاجر محترف',      desc:'خدمة 150 زبون وتحقيق رقم قياسي',            target:150,  current:0,   reward:600, done:false, claimed:false },
+  { id:'a6', title:'ملك الكشك',       desc:'فتح المرحلة الخامسة (إمبراطورية الأكشاك)',  target:1,    current:0,   reward:1200,done:false, claimed:false }
+];
+
+/* =============================================================
+   GAME STATE
+   ============================================================= */
+const STORAGE_KEY = 'kiosk_egypt_save_data_v2';
+
+function makeDefaultState() {
+  return {
+    money: 500, day: 1, stage: 0,
+    dayTimer: 75, dayDuration: 75, dayRunning: false,
+    reputation: 4.8,
+    inventory: { water:20, juice:15, soda:15, chips:20, biscuit:20, chocolate:0, icecream:0 },
+    upgrades: { speed:1, prepSpeed:1, fridgeCap:1, attraction:1, counterSpace:1, carryBag:1 },
+    dayStats: { revenue:0, cost:0, served:0, lost:0, perfect:true },
+    totalStats: { served:0, sales:0, earned:0, upgradesBought:0, daysPlayed:0 },
+    quests: JSON.parse(JSON.stringify(INITIAL_QUESTS)),
+    achievements: JSON.parse(JSON.stringify(INITIAL_ACHIEVEMENTS)),
+    settings: { sfx:true, music:true, vib:true }
+  };
+}
+let state = makeDefaultState();
+
+/* =============================================================
+   ENTITIES
+   ============================================================= */
+const MAX_CARRY_BASE = 3;
+function maxCarry() { return MAX_CARRY_BASE + (state.upgrades.carryBag - 1); }
+
+let player = {
+  x: 200, y: 420, facing: 'down', walkT: 0, moving: false,
+  carrying: [], interactOpen: false, autoTarget: null, bob: 0
+};
+
+let customers = [];
+let particles = [];
+let lastTime = performance.now();
+let lastInteractKey = '__init__';
+let eventTimer = 22;
+let currentEvent = null;
+let dayEnding = false;
+let spawnCooldown = 1.5;
+
+/* =============================================================
+   STATIONS / COLLISION WORLD (virtual 400 x 560)
+   ============================================================= */
+const V_WIDTH = 400, V_HEIGHT = 560;
+const PLAYER_R = 15;
+
+const STATIONS = {
+  counter: { name:'كاونتر التسليم', type:'counter', rect:{ x:50,  y:130, w:300, h:45 }, icon:'🛎️' },
+  fridge:  { name:'ثلاجة المشروبات', type:'fridge',  rect:{ x:40,  y:260, w:60,  h:100 }, icon:'🧊' },
+  shelf:   { name:'رف المقرمشات',   type:'shelf',   rect:{ x:300, y:260, w:60,  h:100 }, icon:'🥨' },
+  storage: { name:'المخزن',          type:'storage', rect:{ x:35,  y:400, w:95,  h:70 },  icon:'📦' },
+  cooler:  { name:'فريزر الآيس كريم',type:'cooler',  rect:{ x:245, y:445, w:110, h:55 },  icon:'🍦' }
+};
+
+const SOLIDS = [
+  STATIONS.fridge.rect,
+  STATIONS.shelf.rect,
+  STATIONS.storage.rect,
+  STATIONS.cooler.rect
+];
+
+const BOUNDS = { x1: 40, y1: 192, x2: 360, y2: 520 };
+
+function canStand(x, y) {
+  if (x < BOUNDS.x1 || x > BOUNDS.x2 || y < BOUNDS.y1 || y > BOUNDS.y2) return false;
+  for (const s of SOLIDS) {
+    if (x + PLAYER_R > s.x && x - PLAYER_R < s.x + s.w &&
+        y + PLAYER_R > s.y && y - PLAYER_R < s.y + s.h) return false;
+  }
+  return true;
+}
+
+function distToRect(px, py, r) {
+  const cx = Math.max(r.x, Math.min(px, r.x + r.w));
+  const cy = Math.max(r.y, Math.min(py, r.y + r.h));
+  return Math.hypot(px - cx, py - cy);
+}
+
+/* =============================================================
+   AUDIO SYNTH
+   ============================================================= */
+let audioCtx = null;
+let musicNodes = null;
+function initAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, dur, type, vol, delay, freq2) {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime + (delay || 0);
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, now);
+  if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, now + dur);
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(vol || 0.2, now + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + dur + 0.03);
+}
+function playSound(type) {
+  if (!state.settings.sfx) return;
+  initAudio();
+  if (!audioCtx) return;
+  try {
+    switch (type) {
+      case 'cash':      tone(987.77, 0.12, 'triangle', 0.28, 0, 1318.51); tone(1567.98, 0.25, 'triangle', 0.16, 0.09); break;
+      case 'pickup':    tone(420, 0.09, 'sine', 0.2, 0, 880); break;
+      case 'drop':      tone(320, 0.1, 'sine', 0.18, 0, 180); break;
+      case 'angry':     tone(160, 0.3, 'sawtooth', 0.18, 0, 85); break;
+      case 'upgrade':   [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,0.2,'triangle',0.22,i*0.08)); break;
+      case 'error':     tone(200, 0.16, 'square', 0.12, 0, 130); break;
+      case 'bell':      tone(1046.5, 0.4, 'sine', 0.16, 0, 1046.5); tone(1318.5, 0.5, 'sine', 0.09, 0.02); break;
+      case 'coin':      tone(1318.51, 0.09, 'square', 0.11, 0); tone(1760, 0.1, 'square', 0.09, 0.06); break;
+      case 'day':       [392,523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,0.3,'triangle',0.2,i*0.11)); break;
+      case 'event':     tone(660,0.12,'square',0.16,0); tone(880,0.14,'square',0.16,0.12); break;
+      case 'grumble':   tone(120, 0.45, 'sawtooth', 0.13, 0, 70); break;
+    }
+  } catch (e) {}
+}
+/* Simple ambient music loop */
+function startMusic() {
+  if (!state.settings.music || !audioCtx || musicNodes) return;
+  try {
+    const master = audioCtx.createGain();
+    master.gain.value = 0.035;
+    master.connect(audioCtx.destination);
+    const notes = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
+    let idx = 0;
+    const g = audioCtx.createGain();
+    g.gain.value = 0.9;
+    g.connect(master);
+    const osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = notes[0];
+    osc.connect(g);
+    osc.start();
+    const timer = setInterval(() => {
+      if (!state.settings.music || !audioCtx) return;
+      idx = (idx + 1) % notes.length;
+      osc.frequency.setTargetAtTime(notes[idx], audioCtx.currentTime, 0.08);
+    }, 520);
+    musicNodes = { osc, master, timer };
+  } catch (e) {}
+}
+function stopMusic() {
+  if (!musicNodes) return;
+  try { clearInterval(musicNodes.timer); musicNodes.osc.stop(); musicNodes.master.disconnect(); } catch (e) {}
+  musicNodes = null;
+}
+
+function vibrate(pattern) {
+  if (!state.settings.vib) return;
+  if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} }
+}
+
+/* =============================================================
+   STORAGE
+   ============================================================= */
+function saveGame() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('kiosk_egypt_save_data_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const base = makeDefaultState();
+      state = {
+        ...base, ...parsed,
+        inventory: { ...base.inventory, ...(parsed.inventory || {}) },
+        upgrades:  { ...base.upgrades,  ...(parsed.upgrades  || {}) },
+        dayStats:  { ...base.dayStats,  ...(parsed.dayStats  || {}) },
+        totalStats:{ ...base.totalStats, ...(parsed.totalStats || {}) },
+        settings:  { ...base.settings,  ...(parsed.settings  || {}) },
+        quests: parsed.quests || base.quests,
+        achievements: parsed.achievements || base.achievements
+      };
+      state.dayRunning = false;
+    }
+  } catch (e) {}
+  syncToggles();
+  updateHUD();
+}
+function confirmResetData() {
+  if (confirm('هل أنت متأكد من مسح جميع بيانات اللعبة والبدء من الصفر؟')) {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('kiosk_egypt_save_data_v1');
+    location.reload();
+  }
+}
+
+/* =============================================================
+   CANVAS
+   ============================================================= */
+const canvas = document.getElementById('kiosk-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.floor(rect.width * dpr);
+  canvas.height = Math.floor(rect.height * dpr);
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
+
+function screenToVirtual(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: ((clientX - r.left) / r.width) * V_WIDTH,
+    y: ((clientY - r.top) / r.height) * V_HEIGHT
+  };
+}
+function virtualToScreen(vx, vy) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (vx / V_WIDTH) * r.width, y: (vy / V_HEIGHT) * r.height };
+}
+
+/* =============================================================
+   JOYSTICK
+   ============================================================= */
+const joystick = { active:false, id:null, dx:0, dy:0 };
+const joyBase = document.getElementById('joystick-base');
+const joyKnob = document.getElementById('joystick-knob');
+const JOY_RADIUS = 42;
+
+function joyUpdate(clientX, clientY) {
+  const r = joyBase.getBoundingClientRect();
+  let dx = clientX - (r.left + r.width / 2);
+  let dy = clientY - (r.top + r.height / 2);
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_RADIUS) { dx = (dx / d) * JOY_RADIUS; dy = (dy / d) * JOY_RADIUS; }
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+  const nd = Math.hypot(dx, dy);
+  if (nd < 6) { joystick.dx = 0; joystick.dy = 0; }
+  else { joystick.dx = dx / JOY_RADIUS; joystick.dy = dy / JOY_RADIUS; }
+}
+function joyReset() {
+  joystick.active = false; joystick.id = null; joystick.dx = 0; joystick.dy = 0;
+  joyKnob.style.transform = 'translate(0px,0px)';
+}
+joyBase.addEventListener('pointerdown', e => {
+  e.preventDefault(); initAudio();
+  joystick.active = true; joystick.id = e.pointerId;
+  player.autoTarget = null;
+  try { joyBase.setPointerCapture(e.pointerId); } catch (err) {}
+  joyUpdate(e.clientX, e.clientY);
+});
+joyBase.addEventListener('pointermove', e => {
+  if (!joystick.active || e.pointerId !== joystick.id) return;
+  e.preventDefault();
+  joyUpdate(e.clientX, e.clientY);
+});
+['pointerup','pointercancel','lostpointercapture'].forEach(ev =>
+  joyBase.addEventListener(ev, e => { if (e.pointerId === joystick.id) joyReset(); })
+);
+joyBase.addEventListener('touchstart', e => e.preventDefault(), { passive:false });
+
+/* =============================================================
+   CANVAS TAP -> AUTO WALK / STATION
+   ============================================================= */
+function handleCanvasTap(clientX, clientY) {
+  initAudio();
+  const v = screenToVirtual(clientX, clientY);
+  // station tap?
+  let target = null, best = 1e9;
+  for (const key in STATIONS) {
+    const st = STATIONS[key];
+    const d = distToRect(v.x, v.y, st.rect);
+    if (d < 26 && d < best) { best = d; target = st; }
+  }
+  if (target) {
+    let tx = target.rect.x + target.rect.w / 2;
+    let ty = target.rect.y + target.rect.h + PLAYER_R + 8;
+    if (target.type === 'counter') ty = target.rect.y + target.rect.h + PLAYER_R + 10;
+    if (target.type === 'fridge') { tx = target.rect.x + target.rect.w + PLAYER_R + 8; ty = target.rect.y + target.rect.h / 2; }
+    if (target.type === 'shelf')  { tx = target.rect.x - PLAYER_R - 8; ty = target.rect.y + target.rect.h / 2; }
+    if (target.type === 'storage'){ tx = target.rect.x + target.rect.w + PLAYER_R + 10; ty = target.rect.y + 26; }
+    if (target.type === 'cooler') { tx = target.rect.x - PLAYER_R - 10; ty = target.rect.y + target.rect.h / 2; }
+    player.autoTarget = {
+      x: Math.max(BOUNDS.x1, Math.min(BOUNDS.x2, tx)),
+      y: Math.max(BOUNDS.y1, Math.min(BOUNDS.y2, ty))
+    };
+  } else {
+    player.autoTarget = {
+      x: Math.max(BOUNDS.x1, Math.min(BOUNDS.x2, v.x)),
+      y: Math.max(BOUNDS.y1, Math.min(BOUNDS.y2, v.y))
+    };
+  }
+}
+canvas.addEventListener('mousedown', e => { e.preventDefault(); handleCanvasTap(e.clientX, e.clientY); });
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length > 0) { e.preventDefault(); handleCanvasTap(e.touches[0].clientX, e.touches[0].clientY); }
+}, { passive:false });
+canvas.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
+
+/* =============================================================
+   INTERACTION SYSTEM
+   ============================================================= */
+function getNearbyInteractable() {
+  if (!state.dayRunning) return null;
+  let best = null, bestD = 1e9;
+  for (const key in STATIONS) {
+    const st = STATIONS[key];
+    const d = distToRect(player.x, player.y, st.rect);
+    if (d < 50 && d < bestD) {
+      // must be OUTSIDE the solid (not overlapping)
+      bestD = d;
+      best = st;
+    }
+  }
+  return best;
+}
+
+function makeBtn(label, cls, onClick, sub) {
+  const b = document.createElement('button');
+  b.className = 'interact-btn ' + (cls || 'bg-amber-500 text-stone-950');
+  b.innerHTML = '<span>' + label + '</span>' + (sub ? '<span class="cnt">' + sub + '</span>' : '');
+  b.onclick = (e) => { e.stopPropagation(); initAudio(); onClick(); };
+  b.ontouchstart = (e) => { e.stopPropagation(); };
+  return b;
+}
+
+function updateInteractPanel() {
+  const panel = document.getElementById('interact-panel');
+  const target = getNearbyInteractable();
+
+  if (!target) {
+    if (!panel.classList.contains('hidden')) panel.classList.add('hidden');
+    player.interactOpen = false;
+    lastInteractKey = '__none__';
+    return;
+  }
+
+  const stockKey = Object.keys(PRODUCTS).map(k => state.inventory[k] || 0).join(',');
+  const key = target.type + '|' + player.interactOpen + '|' + player.carrying.join(',') + '|' + stockKey + '|' + state.stage;
+  if (key === lastInteractKey) return;
+  lastInteractKey = key;
+
+  panel.classList.remove('hidden');
+  panel.innerHTML = '';
+
+  if (target.type === 'counter') {
+    panel.appendChild(makeBtn('🛎️ بيع / سلّم الطلب', 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-950', () => doServe()));
+  } else if (target.type === 'storage') {
+    panel.appendChild(makeBtn('📦 افتح المخزن', 'bg-gradient-to-b from-yellow-500 to-amber-700 text-white', () => openModal('inventory-modal')));
+  } else {
+    if (!player.interactOpen) {
+      const labels = { fridge:'🧊 افتح الثلاجة', shelf:'🥨 خذ المنتج', cooler:'🍦 افتح الفريزر' };
+      const colors = { fridge:'bg-gradient-to-b from-sky-500 to-sky-800 text-white',
+                       shelf:'bg-gradient-to-b from-amber-500 to-amber-800 text-white',
+                       cooler:'bg-gradient-to-b from-rose-500 to-rose-800 text-white' };
+      panel.appendChild(makeBtn(labels[target.type], colors[target.type], () => {
+        player.interactOpen = true; lastInteractKey = '__force__'; updateInteractPanel();
+      }));
+    } else {
+      const prods = Object.values(PRODUCTS).filter(p => p.station === target.type && p.unlockStage <= state.stage);
+      prods.forEach(p => {
+        const stock = state.inventory[p.id] || 0;
+        const cls = stock <= 0 ? 'bg-stone-700 text-stone-400' : 'bg-gradient-to-b from-emerald-500 to-emerald-700 text-white';
+        panel.appendChild(makeBtn(p.emoji + ' ' + p.short, cls, () => takeProduct(p.id), String(stock)));
+      });
+      panel.appendChild(makeBtn('✖ إغلاق', 'bg-stone-800 text-stone-300', () => {
+        player.interactOpen = false; lastInteractKey = '__force__'; updateInteractPanel();
+      }));
+    }
+  }
+}
+
+/* ---- TAKE PRODUCT ---- */
+function takeProduct(id) {
+  const prod = PRODUCTS[id];
+  if (!prod) return;
+  if (player.carrying.length >= maxCarry()) {
+    floatToast(player.x, player.y - 40, '✋ يداك مليانتين!');
+    playSound('error'); vibrate(25);
+    return;
+  }
+  if ((state.inventory[id] || 0) <= 0) {
+    floatToast(player.x, player.y - 40, '⚠️ ' + prod.short + ' خلصت!');
+    playSound('error'); vibrate([20,40,20]);
+    return;
+  }
+  state.inventory[id]--;
+  player.carrying.push(id);
+  playSound('pickup'); vibrate(12);
+  createParticle(player.x + (Math.random()*20-10), player.y - 26, prod.emoji);
+  updateCarryHUD();
+  updateHUD();
+  saveGame();
+  checkStockAlerts(id);
+  lastInteractKey = '__force__';
+  updateInteractPanel();
+}
+
+/* ---- SERVE ---- */
+function doServe() {
+  if (player.carrying.length === 0) {
+    floatToast(player.x, player.y - 40, 'مش حامل حاجة! 🚫');
+    playSound('error'); vibrate(20);
+    return;
+  }
+  const candidates = customers.filter(c => c.atCounter && c.state === 'ordering' && c.order.some(o => !o.done));
+  if (candidates.length === 0) {
+    floatToast(player.x, player.y - 40, 'مفيش زبون عند الكاونتر');
+    playSound('error');
+    return;
+  }
+  let best = null, bestScore = 0, bestPatience = Infinity;
+  for (const c of candidates) {
+    const rem = c.order.filter(o => !o.done).map(o => o.item);
+    const pool = [...player.carrying];
+    let m = 0;
+    for (const need of rem) {
+      const i = pool.indexOf(need);
+      if (i !== -1) { m++; pool.splice(i, 1); }
+    }
+    if (m > 0 && (m > bestScore || (m === bestScore && c.patienceTimer < bestPatience))) {
+      best = c; bestScore = m; bestPatience = c.patienceTimer;
+    }
+  }
+  if (!best) {
+    floatToast(player.x, player.y - 40, 'الزبون مش طالب اللي معاك');
+    playSound('error'); vibrate(25);
+    return;
+  }
+
+  // Deliver
+  const remaining = [];
+  let earned = 0, deliveredCount = 0;
+  for (const it of player.carrying) {
+    const slot = best.order.find(o => !o.done && o.item === it);
+    if (slot) {
+      slot.done = true;
+      deliveredCount++;
+      const base = Math.round(PRODUCTS[it].sell * STAGES[state.stage].mult * best.payMul);
+      earned += base;
+    } else {
+      remaining.push(it);
+    }
+  }
+  player.carrying = remaining;
+  updateCarryHUD();
+
+  // Money & stats
+  state.money += earned;
+  state.dayStats.revenue += earned;
+  state.totalStats.earned += earned;
+  state.totalStats.sales += deliveredCount;
+  if (deliveredCount > 0) {
+    const costBasis = PRODUCTS[best.order.find(o => o.item)?.item]?.buy || 0;
+  }
+  // costs are accounted at purchase time in this build (see buyStock) — keep day cost via purchased sum:
+  playSound('cash'); vibrate(35);
+  showCoinEffect(best.x, best.y - 20, '+' + earned + ' ج.م');
+  createParticle(best.x, best.y - 10, '✨');
+  createParticle(best.x + 12, best.y - 18, '💰');
+
+  trackQuest('sell', deliveredCount);
+  trackQuest('money', earned);
+  trackAchievement('a1', 1);
+  trackAchievement('a2', state.money);
+
+  updateHUD();
+
+  // Complete order?
+  if (best.order.every(o => o.done)) {
+    // Tip
+    let tip = 0;
+    if (Math.random() < best.tipProb + state.upgrades.counterSpace * 0.04) {
+      tip = 2 + Math.floor(Math.random() * (4 + best.payMul * 3));
+      state.money += tip;
+      state.dayStats.revenue += tip;
+      floatToast(best.x, best.y - 55, '💵 بقشيش +' + tip);
+      playSound('coin');
+    }
+    best.state = 'paying';
+    best.stateTimer = 0.7;
+    best.happy = true;
+    state.dayStats.served++;
+    state.totalStats.served++;
+    trackQuest('serve', 1);
+    trackAchievement('a3', state.totalStats.served);
+    trackAchievement('a5', state.totalStats.served);
+    state.reputation = Math.min(5.0, +(state.reputation + 0.02).toFixed(2));
+    createParticle(best.x, best.y - 34, '😊');
+  } else {
+    floatToast(best.x, best.y - 52, 'الطلب لسه ناقص...');
+  }
+
+  // stock alerts
+  for (const it of Object.keys(PRODUCTS)) checkStockAlerts(it);
+
+  saveGame();
+  lastInteractKey = '__force__';
+  updateInteractPanel();
+}
+
+/* =============================================================
+   STOCK
+   ============================================================= */
+function maxStockOf(id) { return PRODUCTS[id].maxStock + (state.upgrades.fridgeCap - 1) * 10; }
+
+function buyStock(id, qty) {
+  qty = qty || 1;
+  const prod = PRODUCTS[id];
+  if (!prod) return;
+  const max = maxStockOf(id);
+  let bought = 0;
+  for (let i = 0; i < qty; i++) {
+    if (state.inventory[id] >= max) break;
+    if (state.money < prod.buy) break;
+    state.money -= prod.buy;
+    state.dayStats.cost += prod.buy;
+    state.inventory[id]++;
+    bought++;
+  }
+  if (bought > 0) {
+    playSound('pickup'); vibrate(10);
+    updateHUD(); renderInventoryModal(); saveGame();
+  } else {
+    playSound('error');
+  }
+}
+
+function buyAllStock() {
+  let boughtAny = false;
+  for (const id in PRODUCTS) {
+    const prod = PRODUCTS[id];
+    if (prod.unlockStage > state.stage) continue;
+    const max = maxStockOf(id);
+    let guard = 0;
+    while (state.inventory[id] < max && state.money >= prod.buy && guard++ < 500) {
+      state.money -= prod.buy;
+      state.dayStats.cost += prod.buy;
+      state.inventory[id]++;
+      boughtAny = true;
+    }
+  }
+  if (boughtAny) {
+    playSound('cash'); vibrate(25);
+    updateHUD(); renderInventoryModal(); saveGame();
+  } else { playSound('error'); }
+}
+
+function restockRequested() {
+  const needed = {};
+  customers.forEach(c => c.order.forEach(o => { if (!o.done) needed[o.item] = (needed[o.item] || 0) + 1; }));
+  const ids = Object.keys(needed);
+  if (ids.length === 0) { playSound('error'); return; }
+  let boughtAny = false;
+  ids.forEach(id => {
+    const prod = PRODUCTS[id]; if (!prod) return;
+    const max = maxStockOf(id);
+    const want = Math.min(needed[id] + 2, max - state.inventory[id]);
+    for (let i = 0; i < want; i++) {
+      if (state.money < prod.buy) break;
+      state.money -= prod.buy; state.dayStats.cost += prod.buy;
+      state.inventory[id]++; boughtAny = true;
+    }
+  });
+  if (boughtAny) { playSound('cash'); vibrate(20); updateHUD(); renderInventoryModal(); saveGame(); }
+  else playSound('error');
+}
+
+function checkStockAlerts(id) {
+  if ((state.inventory[id] || 0) === 0 && !emptyAlerted[id]) {
+    emptyAlerted[id] = true;
+    floatToast(player.x, player.y - 50, '❗ ' + PRODUCTS[id].short + ' خلصت!');
+    playSound('grumble');
+  } else if ((state.inventory[id] || 0) > 0) {
+    emptyAlerted[id] = false;
+  }
+}
+const emptyAlerted = {};
+
+/* =============================================================
+   UPGRADES
+   ============================================================= */
+function buyUpgrade(key) {
+  const up = UPGRADE_TYPES[key];
+  const lvl = state.upgrades[key];
+  if (!up || lvl >= up.maxLevel) return;
+  const cost = up.baseCost * lvl;
+  if (state.money < cost) { playSound('error'); vibrate(25); return; }
+  state.money -= cost;
+  state.upgrades[key]++;
+  state.totalStats.upgradesBought++;
+  playSound('upgrade'); vibrate([20, 40, 20]);
+  trackQuest('upgrade', 1);
+  updateHUD(); renderUpgradesModal(); saveGame();
+  createParticle(player.x, player.y - 40, '⭐');
+}
+
+function unlockStage(stageId) {
+  const stg = STAGES[stageId];
+  if (!stg || state.stage >= stageId) return;
+  if (state.stage !== stageId - 1) { playSound('error'); return; }
+  if (state.totalStats.served < stg.reqServed) { playSound('error'); return; }
+  if (state.money < stg.cost) { playSound('error'); vibrate(25); return; }
+  state.money -= stg.cost;
+  state.stage = stageId;
+  playSound('upgrade'); vibrate([30, 60, 30, 60, 30]);
+  trackAchievement('a4', 1);
+  if (stageId === 4) trackAchievement('a6', 1);
+  updateHUD(); renderStagesModal(); saveGame();
+  floatToast(200, 250, '🎉 مبروك فتحت: ' + stg.name);
+}
+
+/* =============================================================
+   QUESTS & ACHIEVEMENTS
+   ============================================================= */
+function trackQuest(type, amount) {
+  let alert = false;
+  state.quests.forEach(q => {
+    if (q.type === type && !q.done) {
+      q.current += amount;
+      if (q.current >= q.target) { q.done = true; alert = true; }
+    }
+  });
+  const badge = document.getElementById('quest-alert-badge');
+  if (alert && badge) badge.classList.remove('hidden');
+}
+function trackAchievement(id, val) {
+  const a = state.achievements.find(x => x.id === id);
+  if (a && !a.done) {
+    if (typeof val === 'number') a.current = Math.max(a.current, val);
+    if (a.current >= a.target) { a.done = true; playSound('bell'); floatToast(player.x, player.y - 60, '🏆 إنجاز: ' + a.title); }
+  }
+}
+function claimQuest(id) {
+  const q = state.quests.find(x => x.id === id);
+  if (q && q.done && !q.claimed) {
+    q.claimed = true; state.money += q.reward;
+    playSound('cash'); vibrate(30);
+    updateHUD(); renderQuestsModal(); saveGame();
+  }
+}
+function claimAchievement(id) {
+  const a = state.achievements.find(x => x.id === id);
+  if (a && a.done && !a.claimed) {
+    a.claimed = true; state.money += a.reward;
+    playSound('cash'); vibrate(30);
+    updateHUD(); renderAchievementsModal(); saveGame();
+  }
+}
+
+/* =============================================================
+   GAME LOOP
+   ============================================================= */
+function gameLoop(now) {
+  const dt = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
+  if (state.dayRunning) updateGame(dt);
+  renderGame();
+  updateInteractPanel();
+  requestAnimationFrame(gameLoop);
+}
+
+function updateGame(dt) {
+  /* ---- Day timer ---- */
+  state.dayTimer -= dt;
+  const bar = document.getElementById('day-progress-bar');
+  if (bar) bar.style.width = Math.max(0, (state.dayTimer / state.dayDuration) * 100) + '%';
+  if (state.dayTimer <= 0) { state.dayTimer = 0; endDay(); return; }
+
+  /* ---- Player movement ---- */
+  const baseSpeed = 155 + (state.upgrades.speed - 1) * 24;
+  let mvx = 0, mvy = 0;
+
+  if (joystick.dx !== 0 || joystick.dy !== 0) {
+    mvx = joystick.dx * baseSpeed * dt;
+    mvy = joystick.dy * baseSpeed * dt;
+    player.autoTarget = null;
+    if (Math.abs(joystick.dx) > Math.abs(joystick.dy)) player.facing = joystick.dx > 0 ? 'right' : 'left';
+    else player.facing = joystick.dy > 0 ? 'down' : 'up';
+  } else if (player.autoTarget) {
+    const dx = player.autoTarget.x - player.x;
+    const dy = player.autoTarget.y - player.y;
+    const d = Math.hypot(dx, dy);
+    if (d < 3) { player.autoTarget = null; }
+    else {
+      const sp = Math.min(baseSpeed * dt, d);
+      mvx = (dx / d) * sp; mvy = (dy / d) * sp;
+    }
+  }
+
+  if (mvx !== 0 || mvy !== 0) {
+    if (canStand(player.x + mvx, player.y)) player.x += mvx;
+    else if (player.autoTarget) { player.autoTarget = null; }
+    if (canStand(player.x, player.y + mvy)) player.y += mvy;
+    else if (player.autoTarget) { player.autoTarget = null; }
+    player.moving = true;
+    player.walkT += dt * 9;
+    player.bob = Math.sin(player.walkT) * 2.2;
+  } else {
+    player.moving = false;
+    player.bob *= 0.85;
+  }
+
+  /* ---- Customer spawning ---- */
+  const stg = STAGES[state.stage];
+  const maxCust = stg.maxCustomers;
+  const attractionBonus = (state.upgrades.attraction - 1) * 0.55;
+  const rushBonus = (currentEvent === 'rush') ? 2.2 : 0;
+  const vipDay = (currentEvent === 'vip') ? 0.35 : 0;
+  let spawnInterval = Math.max(2.4, 6.6 - attractionBonus - rushBonus);
+
+  spawnCooldown -= dt;
+  if (customers.length < maxCust && spawnCooldown <= 0) {
+    if (Math.random() < 0.65 + vipDay) { spawnCustomer(); }
+    spawnCooldown = spawnInterval * (0.75 + Math.random() * 0.6);
+  }
+
+  /* ---- Customers update ---- */
+  for (let i = customers.length - 1; i >= 0; i--) {
+    const c = customers[i];
+    const slotX = customerSlotX(c.slot);
+    const st = c.state;
+
+    if (st === 'entering') {
+      const ty = 82;
+      const dx = slotX - c.x, dy = ty - c.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 3) { c.x = slotX; c.y = ty; c.state = 'ordering'; c.atCounter = true; }
+      else {
+        const sp = c.walkSpeed * dt;
+        c.x += (dx / d) * Math.min(sp, d);
+        c.y += (dy / d) * Math.min(sp, d);
+        c.walkT = (c.walkT || 0) + dt * 8;
+      }
+    } else if (st === 'ordering') {
+      // idle shuffle
+      c.x += (slotX - c.x) * Math.min(1, dt * 4);
+      c.walkT = (c.walkT || 0) + dt * 4;
+      c.patienceTimer -= dt;
+      if (c.patienceTimer <= 0) {
+        c.patienceTimer = 0;
+        c.state = 'angry';
+        c.stateTimer = 0;
+        playSound('grumble'); vibrate([30, 50, 30]);
+        floatToast(c.x, c.y - 45, '😡 خلاص، همشي!');
+        state.dayStats.lost++;
+        state.dayStats.perfect = false;
+        state.reputation = Math.max(3.0, +(state.reputation - 0.08).toFixed(2));
+        updateHUD();
+        continue;
+      }
+    } else if (st === 'paying') {
+      c.stateTimer -= dt;
+      if (c.stateTimer <= 0) { c.state = 'leaving'; }
+    } else if (st === 'leaving' || st === 'angry') {
+      c.y -= c.walkSpeed * dt * 1.3;
+      c.walkT = (c.walkT || 0) + dt * 10;
+      if (c.y < -80) {
+        customers.splice(i, 1);
+        reassignSlots();
+        continue;
+      }
+    }
+  }
+
+  /* ---- Particles ---- */
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 90 * dt;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  /* ---- Random events ---- */
+  eventTimer -= dt;
+  if (eventTimer <= 0) { triggerRandomEvent(); }
+}
+
+function customerSlotX(slot) {
+  const stg = STAGES[state.stage];
+  const n = stg.maxCustomers;
+  const spread = Math.min(58, 300 / Math.max(1, n));
+  const offset = (slot - (n - 1) / 2) * spread;
+  return Math.max(45, Math.min(355, 200 + offset));
+}
+
+function reassignSlots() {
+  customers.forEach((c, i) => { c.slot = i; });
+}
+
+/* =============================================================
+   CUSTOMER SPAWN
+   ============================================================= */
+function spawnCustomer() {
+  const available = Object.keys(PRODUCTS).filter(k => PRODUCTS[k].unlockStage <= state.stage);
+  if (available.length === 0) return;
+
+  const isVip = currentEvent === 'vip' && Math.random() < 0.45;
+  const pool = isVip ? CUSTOMER_TYPES.filter(t => t.id === 'vip') : CUSTOMER_TYPES;
+  const type = pool[Math.floor(Math.random() * pool.length)];
+
+  const validItems = type.items.filter(it => PRODUCTS[it].unlockStage <= state.stage);
+  const orderItems = validItems.length ? validItems : available;
+
+  // 1-3 items in the order, weighted
+  const count = Math.random() < 0.35 ? 1 : (Math.random() < 0.72 ? 2 : 3);
+  const order = [];
+  for (let i = 0; i < count; i++) {
+    order.push({ item: orderItems[Math.floor(Math.random() * orderItems.length)], done: false });
+  }
+
+  const patienceBoost = (state.upgrades.attraction - 1) * 3 + (state.upgrades.speed - 1) * 1.5;
+  const maxP = type.patience + patienceBoost + order.length * 3;
+  const slot = customers.length;
+
+  customers.push({
+    id: type.id, name: type.name, avatar: type.avatar,
+    walkSpeed: type.walkSpeed, tipProb: type.tipProb, payMul: type.payMul,
+    order: order,
+    patienceTimer: maxP,
+    maxPatience: maxP,
+    x: customerSlotX(slot), y: -60,
+    walkT: 0,
+    slot: slot,
+    state: 'entering',
+    atCounter: false,
+    stateTimer: 0,
+    happy: false
+  });
+  playSound('bell');
+}
+
+/* =============================================================
+   RANDOM EVENTS
+   ============================================================= */
+function triggerRandomEvent() {
+  const events = [
+    { id:'rush',     text:'⚡ زحمة مفاجئة! توافد زبائن كثيرين', dur: 12 },
+    { id:'vip',      text:'👑 زبون VIP وصل الكشك! طلب غالي وبقشيش كبير', dur: 14 },
+    { id:'popular',  text:'🔥 طلب متزايد على المشروبات والشيبسي!', dur: 13 },
+    { id:'discount', text:'🏷️ خصم المورد على البضاعة!', dur: 15 },
+    { id:'strong',   text:'💪 يوم المبيعات القوي: أرباح مضاعفة!', dur: 12 }
+  ];
+  const ev = events[Math.floor(Math.random() * events.length)];
+  currentEvent = ev.id;
+
+  if (ev.id === 'rush') { spawnCooldown = 0; }
+  if (ev.id === 'vip') { spawnCustomer(); }
+
+  const toast = document.getElementById('event-toast');
+  const txt = document.getElementById('event-toast-text');
+  if (toast && txt) {
+    txt.innerText = ev.text;
+    toast.classList.remove('hidden');
+    toast.classList.remove('event-shake'); void toast.offsetWidth; toast.classList.add('event-shake');
+    playSound('event'); vibrate([15, 30, 15]);
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { toast.classList.add('hidden'); currentEvent = null; }, ev.dur * 1000);
+  }
+  eventTimer = 26 + Math.random() * 22;
+}
+
+/* =============================================================
+   RENDERING
+   ============================================================= */
+function renderGame() {
+  const scaleX = canvas.width / V_WIDTH;
+  const scaleY = canvas.height / V_HEIGHT;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.scale(scaleX, scaleY);
+
+  /* ---- floor ---- */
+  ctx.fillStyle = '#2d2522';
+  ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+
+  // sidewalk (outside)
+  const g = ctx.createLinearGradient(0, 0, 0, 150);
+  g.addColorStop(0, '#4a423e');
+  g.addColorStop(1, '#3a3330');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, V_WIDTH, 150);
+  ctx.strokeStyle = '#5f5550'; ctx.lineWidth = 2;
+  for (let i = 0; i < 8; i++) {
+    ctx.beginPath(); ctx.moveTo(i * 50, 0); ctx.lineTo(i * 50, 150); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * 30); ctx.lineTo(V_WIDTH, i * 30); ctx.stroke();
+  }
+  ctx.strokeStyle = '#6b6058'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0, 148); ctx.lineTo(V_WIDTH, 148); ctx.stroke();
+
+  // kiosk interior floor
+  ctx.fillStyle = '#1c1614';
+  ctx.fillRect(20, 148, 360, 392);
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 7; col++) {
+      if ((row + col) % 2 === 0) {
+        ctx.fillStyle = '#261e1b';
+        ctx.fillRect(23 + col * 51, 152 + row * 43.5, 51, 43.5);
+      }
+    }
+  }
+  // interior border
+  ctx.strokeStyle = 'rgba(251,191,36,0.10)'; ctx.lineWidth = 2;
+  ctx.strokeRect(21, 149, 358, 390);
+
+  /* ---- Counter ---- */
+  const cr = STATIONS.counter.rect;
+  ctx.fillStyle = '#5b3a10';
+  ctx.fillRect(cr.x, cr.y + 8, cr.w, cr.h - 4);
+  ctx.fillStyle = '#854d0e';
+  ctx.fillRect(cr.x, cr.y, cr.w, cr.h - 6);
+  ctx.fillStyle = '#a16207';
+  ctx.fillRect(cr.x + 4, cr.y + 3, cr.w - 8, 12);
+  // counter top highlight
+  ctx.fillStyle = 'rgba(253,224,71,0.25)';
+  ctx.fillRect(cr.x + 4, cr.y + 3, cr.w - 8, 3);
+  ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('🛎️', 200, cr.y + 28);
+  ctx.font = 'bold 10px Cairo, sans-serif';
+  ctx.fillStyle = '#fde68a';
+  ctx.fillText('كاونتر التسليم', 200, cr.y - 5);
+
+  /* ---- Fridge ---- */
+  drawStationBox(STATIONS.fridge, '#0c4a6e', '#38bdf8', '🧊', 'المشروبات');
+  /* ---- Shelf ---- */
+  drawStationBox(STATIONS.shelf, '#78350f', '#fbbf24', '🥨', 'شيبسي ومقرمشات');
+  /* ---- Storage ---- */
+  drawStationBox(STATIONS.storage, '#3f2b13', '#d97706', '📦', 'المخزن', true);
+  /* ---- Cooler ---- */
+  drawStationBox(STATIONS.cooler, '#881337', '#fbcfe8', '🍦', 'فريزر آيس', true);
+
+  /* ---- Customers ---- */
+  customers.forEach(c => drawCustomer(c));
+
+  /* ---- Player ---- */
+  drawPlayer();
+
+  /* ---- Particles ---- */
+  particles.forEach(p => {
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life / p.maxLife));
+    ctx.font = p.size + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.restore();
+}
+
+function drawStationBox(st, dark, light, emoji, label, isBottom) {
+  const r = st.rect;
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(r.x + 3, r.y + 5, r.w, r.h);
+  // body
+  ctx.fillStyle = dark;
+  ctx.fillRect(r.x, r.y, r.w, r.h);
+  // glass/face
+  ctx.fillStyle = light;
+  ctx.globalAlpha = 0.32;
+  ctx.fillRect(r.x + 5, r.y + 5, r.w - 10, r.h - 10);
+  ctx.globalAlpha = 1;
+  // border
+  ctx.strokeStyle = light; ctx.lineWidth = 2;
+  ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+  // emoji
+  ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(emoji, r.x + r.w / 2, r.y + r.h / 2 + (isBottom ? 4 : 0));
+  // label
+  ctx.font = 'bold 9px Cairo, sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(label, r.x + r.w / 2, r.y + r.h - 6);
+}
+
+function drawCustomer(c) {
+  const bob = Math.sin((c.walkT || 0)) * 2;
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(c.x, c.y + 26, 15, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // avatar
+  ctx.font = '34px sans-serif'; ctx.textAlign = 'center';
+  ctx.globalAlpha = c.state === 'leaving' || c.state === 'angry' ? 0.85 : 1;
+  ctx.fillText(c.avatar, c.x, c.y + 8 + bob);
+  ctx.globalAlpha = 1;
+
+  const rem = c.order.filter(o => !o.done);
+  const showBubble = c.atCounter && rem.length > 0 && c.state !== 'leaving' && c.state !== 'angry';
+  if (showBubble) {
+    const bw = Math.max(50, rem.length * 26 + 20);
+    const bh = 36;
+    const bx = c.x - bw / 2;
+    const by = c.y - 64;
+    // bubble
+    ctx.fillStyle = '#fffbeb';
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.fill(); ctx.stroke();
+    // tail
+    ctx.beginPath();
+    ctx.moveTo(c.x - 7, by + bh - 1);
+    ctx.lineTo(c.x + 7, by + bh - 1);
+    ctx.lineTo(c.x, by + bh + 9);
+    ctx.closePath();
+    ctx.fillStyle = '#fffbeb'; ctx.fill();
+    ctx.strokeStyle = '#b45309'; ctx.stroke();
+    // items
+    ctx.font = '18px sans-serif';
+    rem.forEach((o, i) => {
+      ctx.fillText(PRODUCTS[o.item].emoji, bx + 22 + i * 26, by + 25);
+    });
+
+    // patience bar
+    const ratio = Math.max(0, c.patienceTimer / c.maxPatience);
+    const pw = 54;
+    const py = c.y + 26;
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.beginPath(); ctx.roundRect(c.x - pw / 2, py, pw, 8, 4); ctx.fill();
+    let col = '#22c55e';
+    if (ratio <= 0.25) col = '#ef4444';
+    else if (ratio <= 0.5) col = '#eab308';
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.roundRect(c.x - pw / 2 + 1, py + 1, Math.max(0, (pw - 2) * ratio), 6, 3); ctx.fill();
+
+    // state text
+    let txt = '';
+    if (ratio <= 0.12) txt = 'خلاص، همشي!';
+    else if (ratio <= 0.35) txt = 'مستعجل!';
+    if (txt) {
+      ctx.font = 'bold 9px Cairo, sans-serif';
+      ctx.fillStyle = ratio <= 0.12 ? '#f87171' : '#fbbf24';
+      ctx.fillText(txt, c.x, py + 20);
+    }
+  }
+}
+
+function drawPlayer() {
+  const x = player.x, y = player.y + player.bob;
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(player.x, player.y + 17, 15, 6.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // body (shopkeeper)
+  ctx.save();
+  ctx.translate(x, y);
+  // apron
+  ctx.fillStyle = '#0f766e';
+  ctx.beginPath(); ctx.roundRect(-11, 2, 22, 18, 6); ctx.fill();
+  // shirt
+  ctx.fillStyle = '#e2e8f0';
+  ctx.beginPath(); ctx.roundRect(-12, -4, 24, 14, 7); ctx.fill();
+  // head
+  ctx.font = '32px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('👨‍🦱', 0, 4);
+  ctx.restore();
+
+  // facing indicator ring (subtle)
+  ctx.strokeStyle = 'rgba(251,191,36,0.45)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 15, 17, 8, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // carrying items above head
+  if (player.carrying.length > 0) {
+    const n = player.carrying.length;
+    const w = n * 24 + 8;
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(x - w / 2, y - 56, w, 26, 7); ctx.fill(); ctx.stroke();
+    ctx.font = '16px sans-serif';
+    player.carrying.forEach((it, i) => {
+      ctx.fillText(PRODUCTS[it].emoji, x - w / 2 + 16 + i * 24, y - 37);
+    });
+  }
+}
+
+/* =============================================================
+   EFFECTS
+   ============================================================= */
+function createParticle(x, y, text) {
+  particles.push({
+    x, y, text,
+    vx: (Math.random() * 40 - 20),
+    vy: -55 - Math.random() * 30,
+    life: 0.85, maxLife: 0.85, size: 18
+  });
+}
+function showCoinEffect(vx, vy, text) {
+  const s = virtualToScreen(vx, vy);
+  const el = document.createElement('div');
+  el.className = 'coin-effect font-brand';
+  el.innerText = text;
+  el.style.left = s.x + 'px';
+  el.style.top = s.y + 'px';
+  document.getElementById('game-view').appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+function floatToast(vx, vy, text) {
+  const s = virtualToScreen(vx, vy);
+  const el = document.createElement('div');
+  el.className = 'toast-float text-white';
+  el.innerText = text;
+  el.style.left = s.x + 'px';
+  el.style.top = s.y + 'px';
+  document.getElementById('game-view').appendChild(el);
+  setTimeout(() => el.remove(), 1550);
+}
+
+/* =============================================================
+   HUD
+   ============================================================= */
+function updateHUD() {
+  document.getElementById('player-money').innerText = Math.max(0, Math.round(state.money)).toLocaleString('en-US');
+  document.getElementById('day-counter').innerText = state.day;
+  document.getElementById('stage-name-badge').innerText = STAGES[state.stage].name;
+  document.getElementById('rep-rating').innerText = state.reputation.toFixed(1);
+  const lvl = state.stage + 1;
+  document.getElementById('kiosk-level').innerText = '★'.repeat(Math.min(lvl, 5));
+}
+function bumpMoney() {
+  const el = document.getElementById('player-money');
+  el.classList.remove('money-pop'); void el.offsetWidth; el.classList.add('money-pop');
+}
+const _origUpdateHUD = updateHUD;
+updateHUD = function () { _origUpdateHUD(); };
+
+function updateCarryHUD() {
+  for (let i = 0; i < 3; i++) {
+    const slot = document.getElementById('slot-' + i);
+    if (!slot) continue;
+    const limit = Math.min(maxCarry(), 3);
+    if (i < limit && player.carrying[i]) {
+      slot.className = 'carry-slot filled';
+      slot.innerText = PRODUCTS[player.carrying[i]].emoji;
+    } else {
+      slot.className = 'carry-slot';
+      slot.innerText = i < limit ? '' : '🔒';
+    }
+  }
+}
+
+/* =============================================================
+   MODAL RENDERING
+   ============================================================= */
+function renderInventoryModal() {
+  const list = document.getElementById('inventory-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const id in PRODUCTS) {
+    const p = PRODUCTS[id];
+    const unlocked = p.unlockStage <= state.stage;
+    const max = maxStockOf(id);
+    const cur = state.inventory[id] || 0;
+    const low = cur <= 3, empty = cur <= 0;
+    const div = document.createElement('div');
+    div.className = 'p-3 rounded-xl border flex items-center justify-between ' +
+      (unlocked ? (empty ? 'bg-red-950/40 border-red-800' : 'bg-stone-900 border-stone-800') : 'bg-stone-900/40 border-stone-800/40 opacity-60');
+    div.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">${p.emoji}</span>
+        <div>
+          <div class="font-bold text-white text-sm">${p.name} ${!unlocked ? '<span class="text-xs text-amber-500">(مغلق)</span>' : ''}</div>
+          <div class="text-xs text-stone-400">بيع: <span class="text-emerald-400 font-bold">${p.sell} ج.م</span> • شراء: ${p.buy} ج.م</div>
+          <div class="text-[10px] font-bold ${empty ? 'text-red-400' : low ? 'text-amber-400' : 'text-stone-500'}">
+            ${empty ? '❗ نفدت الكمية!' : low ? '⚠️ مخزون منخفض' : 'المخزون جيد'}
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="text-right">
+          <div class="text-xs font-bold ${empty ? 'text-red-400' : 'text-stone-300'}">${cur} / ${max}</div>
+          <div class="text-[10px] text-stone-500">المتوفر</div>
+        </div>
+        ${unlocked ? `
+          <button onclick="buyStock('${id}',1)" class="btn-3d px-2.5 py-2 ${state.money >= p.buy && cur < max ? 'bg-amber-600 text-stone-950' : 'bg-stone-800 text-stone-500'} font-bold rounded-lg text-xs">+1</button>
+          <button onclick="buyStock('${id}',5)" class="btn-3d px-2.5 py-2 ${state.money >= p.buy && cur < max ? 'bg-emerald-600 text-white' : 'bg-stone-800 text-stone-500'} font-bold rounded-lg text-xs">+5</button>
+        ` : ''}
+      </div>`;
+    list.appendChild(div);
+  }
+}
+
+function renderUpgradesModal() {
+  const list = document.getElementById('upgrades-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const key in UPGRADE_TYPES) {
+    const up = UPGRADE_TYPES[key];
+    const lvl = state.upgrades[key];
+    const isMax = lvl >= up.maxLevel;
+    const cost = up.baseCost * lvl;
+    const can = state.money >= cost;
+    const card = document.createElement('div');
+    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center';
+    card.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center text-emerald-400 text-lg">
+          <i class="fa-solid ${up.icon}"></i>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">${up.name}</div>
+          <div class="text-[11px] text-stone-400">${up.desc}</div>
+          <div class="text-[10px] text-amber-400 font-semibold mt-0.5">المستوى: ${lvl} / ${up.maxLevel}</div>
+        </div>
+      </div>
+      <div>
+        ${!isMax
+          ? `<button onclick="buyUpgrade('${key}')" class="btn-3d px-3 py-2 ${can ? 'bg-emerald-600 text-white' : 'bg-stone-800 text-stone-500'} font-bold rounded-xl text-xs flex flex-col items-center">
+               <span>تطوير</span><span class="text-[10px]">${cost} ج.م</span>
+             </button>`
+          : `<span class="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800">مكتمل ✅</span>`}
+      </div>`;
+    list.appendChild(card);
+  }
+}
+
+function renderStagesModal() {
+  const list = document.getElementById('stages-list');
+  if (!list) return;
+  list.innerHTML = '';
+  STAGES.forEach((stg, idx) => {
+    const isCurrent = state.stage === idx;
+    const isUnlocked = state.stage >= idx;
+    const canBuy = state.stage === idx - 1;
+    const servedOK = state.totalStats.served >= stg.reqServed;
+    const moneyOK = state.money >= stg.cost;
+    const card = document.createElement('div');
+    card.className = `p-4 rounded-2xl border ${isCurrent ? 'bg-amber-950/40 border-amber-500' : 'bg-stone-900 border-stone-800'} flex justify-between items-center gap-3`;
+    card.innerHTML = `
+      <div>
+        <div class="font-bold text-base ${isCurrent ? 'text-amber-400' : 'text-white'} flex items-center gap-2">
+          <span>${stg.name}</span>
+          <span class="text-[10px] text-amber-300">${'★'.repeat(idx + 1)}</span>
+          ${isCurrent ? '<span class="text-[10px] bg-amber-500 text-stone-950 px-2 py-0.5 rounded-full font-black">الحالي</span>' : ''}
+        </div>
+        <div class="text-xs text-stone-400 mt-1">${stg.desc}</div>
+        <div class="text-[11px] text-cyan-400 mt-1">أقصى زبائن: ${stg.maxCustomers} • أرباح ×${stg.mult}</div>
+        ${!isUnlocked && stg.reqServed > 0 ? `<div class="text-[10px] mt-1 ${servedOK ? 'text-emerald-400' : 'text-stone-500'}">خدمة مطلوبة: ${Math.min(state.totalStats.served, stg.reqServed)} / ${stg.reqServed} زبون</div>` : ''}
+      </div>
+      <div>
+        ${isUnlocked
+          ? (isCurrent ? '' : '<span class="text-xs text-emerald-400 font-bold">مفتوح ✔</span>')
+          : (canBuy
+              ? `<button onclick="unlockStage(${idx})" class="btn-3d px-3 py-2 ${moneyOK && servedOK ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950' : 'bg-stone-800 text-stone-500'} font-bold rounded-xl text-xs flex flex-col items-center">
+                   <span>افتتاح</span><span class="text-[10px]">${stg.cost} ج.م</span>
+                 </button>`
+              : `<span class="text-xs text-stone-600 font-bold">🔒 ${stg.cost} ج.م</span>`)}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function renderQuestsModal() {
+  const list = document.getElementById('quests-list');
+  if (!list) return;
+  list.innerHTML = '';
+  state.quests.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center gap-3';
+    card.innerHTML = `
+      <div>
+        <div class="font-bold text-white text-sm">${q.text}</div>
+        <div class="text-xs text-stone-400 mt-0.5">التقدم: <span class="text-amber-400 font-bold">${Math.min(q.current, q.target)}</span> / ${q.target}</div>
+        <div class="text-[11px] text-yellow-400 font-bold mt-1">المكافأة: +${q.reward} ج.م 💰</div>
+      </div>
+      <div>
+        ${q.claimed
+          ? '<span class="text-xs font-bold text-stone-500">تم الاستلام ✔</span>'
+          : (q.done
+              ? `<button onclick="claimQuest('${q.id}')" class="btn-3d px-3 py-2 bg-emerald-500 text-white font-bold rounded-xl text-xs animate-bounce">استلم الجائزة</button>`
+              : '<span class="text-xs text-stone-600 font-bold">جاري التنفيذ...</span>')}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function renderAchievementsModal() {
+  const list = document.getElementById('achievements-list');
+  if (!list) return;
+  list.innerHTML = '';
+  state.achievements.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'bg-stone-900 border border-stone-800 rounded-2xl p-3 flex justify-between items-center gap-3';
+    card.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-stone-800 border border-amber-500/50 flex items-center justify-center text-xl">${a.done ? '🏆' : '🔒'}</div>
+        <div>
+          <div class="font-bold text-white text-sm">${a.title}</div>
+          <div class="text-[11px] text-stone-400">${a.desc}</div>
+          <div class="text-[10px] text-amber-400 font-bold mt-0.5">جائزة: +${a.reward} ج.م</div>
+        </div>
+      </div>
+      <div>
+        ${a.claimed
+          ? '<span class="text-xs text-stone-500 font-bold">تمت ✔</span>'
+          : (a.done
+              ? `<button onclick="claimAchievement('${a.id}')" class="btn-3d px-3 py-2 bg-yellow-500 text-stone-950 font-black rounded-xl text-xs">استلام</button>`
+              : '<span class="text-xs text-stone-600 font-bold">مقفل</span>')}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function openModal(modalId) {
+  initAudio();
+  document.querySelectorAll('[id$="-modal"]').forEach(m => {
+    if (m.id !== 'start-menu-modal' && m.id !== 'day-summary-modal') m.classList.add('hidden');
+  });
+  if (modalId === 'inventory-modal') renderInventoryModal();
+  if (modalId === 'upgrades-modal') renderUpgradesModal();
+  if (modalId === 'stages-modal') renderStagesModal();
+  if (modalId === 'quests-modal') renderQuestsModal();
+  if (modalId === 'achievements-modal') renderAchievementsModal();
+  const t = document.getElementById(modalId);
+  if (t) t.classList.remove('hidden');
+}
+function closeModal(modalId) {
+  initAudio();
+  const t = document.getElementById(modalId);
+  if (t) t.classList.add('hidden');
+  lastInteractKey = '__force__';
+}
+
+/* =============================================================
+   SETTINGS TOGGLES
+   ============================================================= */
+function paintToggle(id, on) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.className = `w-12 h-6 ${on ? 'bg-emerald-600' : 'bg-stone-700'} rounded-full flex items-center p-1 cursor-pointer transition`;
+  const knob = btn.querySelector('div');
+  if (knob) knob.className = `w-4 h-4 bg-white rounded-full transition transform ${on ? 'translate-x-0' : '-translate-x-6'}`;
+}
+function syncToggles() {
+  paintToggle('sfx-toggle', state.settings.sfx);
+  paintToggle('music-toggle', state.settings.music);
+  paintToggle('vib-toggle', state.settings.vib);
+}
+function toggleSFX() { state.settings.sfx = !state.settings.sfx; paintToggle('sfx-toggle', state.settings.sfx); saveGame(); }
+function toggleMusic() {
+  state.settings.music = !state.settings.music;
+  paintToggle('music-toggle', state.settings.music);
+  if (state.settings.music) { initAudio(); startMusic(); } else stopMusic();
+  saveGame();
+}
+function toggleVib() { state.settings.vib = !state.settings.vib; paintToggle('vib-toggle', state.settings.vib); saveGame(); }
+
+/* =============================================================
+   DAY LIFECYCLE
+   ============================================================= */
+function startGame() {
+  initAudio();
+  startMusic();
+  document.getElementById('start-menu-modal').classList.add('hidden');
+  startDay();
+}
+
+function startDay() {
+  state.dayTimer = state.dayDuration;
+  state.dayRunning = true;
+  dayEnding = false;
+  state.dayStats = { revenue: 0, cost: 0, served: 0, lost: 0, perfect: true };
+  customers = [];
+  player.carrying = [];
+  player.autoTarget = null;
+  player.interactOpen = false;
+  particles = [];
+  spawnCooldown = 1.4;
+  eventTimer = 16 + Math.random() * 8;
+  currentEvent = null;
+  updateCarryHUD();
+  updateHUD();
+  lastInteractKey = '__force__';
+  saveGame();
+}
+
+function endDay() {
+  if (dayEnding) return;
+  dayEnding = true;
+  state.dayRunning = false;
+  state.totalStats.daysPlayed++;
+
+  playSound('day');
+  vibrate([40, 80, 40, 80, 40]);
+
+  if (state.dayStats.lost === 0 && state.dayStats.served > 0) {
+    trackQuest('perfectDay', 1);
+  }
+  trackAchievement('a2', state.money);
+
+  const netProfit = state.dayStats.revenue - state.dayStats.cost;
+  document.getElementById('summary-day-num').innerText = state.day;
+  document.getElementById('sum-revenue').innerText = Math.round(state.dayStats.revenue);
+  document.getElementById('sum-cost').innerText = Math.round(state.dayStats.cost);
+  document.getElementById('sum-profit').innerText = Math.round(netProfit);
+  document.getElementById('sum-served').innerText = state.dayStats.served;
+  document.getElementById('sum-lost').innerText = state.dayStats.lost;
+
+  let stars = '⭐⭐⭐⭐⭐';
+  if (state.dayStats.lost >= 4) stars = '⭐⭐';
+  else if (state.dayStats.lost >= 2) stars = '⭐⭐⭐';
+  else if (state.dayStats.lost === 1) stars = '⭐⭐⭐⭐';
+  else if (state.dayStats.served === 0) stars = '⭐';
+  document.getElementById('sum-stars').innerText = stars;
+
+  document.getElementById('day-summary-modal').classList.remove('hidden');
+  // customers leave
+  customers.forEach(c => { c.state = 'leaving'; });
+  saveGame();
+}
+
+function startNextDay() {
+  state.day++;
+  document.getElementById('day-summary-modal').classList.add('hidden');
+  startDay();
+}
+
+/* =============================================================
+   INIT
+   ============================================================= */
+window.addEventListener('load', () => {
+  resizeCanvas();
+  loadGame();
+  updateCarryHUD();
+  joyReset();
+  renderInventoryModal();
+  requestAnimationFrame(gameLoop);
+});
+window.addEventListener('beforeunload', saveGame);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+setInterval(saveGame, 20000);
+</script>
+</body>
+</html>
